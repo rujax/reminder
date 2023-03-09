@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>assets/img/reminder.svg</file>
+        <file>assets/qss/reminder.qss</file>
+        <file>assets/img/enabled.svg</file>
+        <file>assets/img/disabled.svg</file>
+        <file>assets/img/switch-off.svg</file>
+        <file>assets/img/switch-on.svg</file>
+        <file>assets/img/remove.svg</file>
+        <file>assets/audio/alarm.wav</file>
+        <file>assets/img/reminder.ico</file>
+    </qresource>
+    <qresource prefix="/qt/etc">
+        <file>qt.conf</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,138 @@
+ReminderWidget.reminder {
+    border-bottom: 1px solid lightgray;
+}
+
+QLabel {
+    color: #555;
+    background-color: transparent;
+}
+
+QLabel.title-label {
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+QLabel.repeat-label, QLabel.time-label, QLabel.dnd-label {
+    color: #33ccff;
+}
+
+QTabBar::tab {
+    height: 30px;
+    font-size: 14px;
+}
+
+QMessageBox {
+    background-color: #f6f6f6;
+}
+
+QPushButton#disable-all-button, QPushButton#new-reminder-button, QPushButton#enable-all-button {
+    color: white;
+    margin: 0;
+    height: 60px;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+QPushButton#disable-all-button {
+    background-color: #333;
+}
+
+QPushButton#disable-all-button:hover {
+    background-color: #222;
+}
+
+QPushButton#disable-all-button:disabled {
+    background-color: #ccc;
+}
+
+QPushButton#new-reminder-button {
+    background-color: #0066ff;
+}
+
+QPushButton#new-reminder-button:hover {
+    background-color: #0033ff;
+}
+
+QPushButton#enable-all-button {
+    background-color: #339900;
+}
+
+QPushButton#enable-all-button:hover {
+    background-color: #006600;
+}
+
+QPushButton#enable-all-button:disabled {
+    background-color: #99ff66;
+}
+
+QAbstractScrollArea#reminder-container {
+    border: none;
+}
+
+QScrollBar:vertical {
+    width: 10px;
+    margin: 0;
+    padding: 0 1px 0 0;
+    background-color: #ccc;
+}
+
+QScrollBar::handle:vertical {
+    width: 10px;
+    min-height: 20px;
+    background: rgb(0, 0, 0, 50);
+}
+
+QScrollBar::handle:vertical:hover {
+    background: rgb(0, 0, 0, 70);
+}
+
+QScrollBar::handle:vertical:pressed {
+    background: rgb(0, 0, 0, 90);
+}
+
+QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
+    width: 0;
+    height: 0;
+    background: #ffffff;
+}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: #ffffff;
+}
+
+QLabel#popup-title-label, QPushButton.close-button {
+    background-color: #fefefe;
+}
+
+QLabel#popup-title-label {
+    font-size: 12px;
+}
+
+QLabel#popup-message-label {
+    background-color: #eee;
+}
+
+QPushButton.close-button {
+    font-size: 20px;
+    font-style: normal;
+    font-weight: lighter;
+    border: none;
+    text-align: center;
+    line-height: 30px;
+}
+
+QPushButton.close-button:hover {
+    background-color: red;
+    color: white;
+}
+
+QPushButton.close-button:pressed {
+    background: rgb(255, 0, 0, 90);
+}
+
+QWidget#popup {
+    border: 1px solid #333;
+    border-radius: 10px;
+}

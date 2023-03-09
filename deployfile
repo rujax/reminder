@@ -1,0 +1,1 @@
+windeployqt reminder.exe --no-translations --no-angle --no-opengl-sw
