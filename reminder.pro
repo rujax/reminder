@@ -58,7 +58,7 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-VERSION = 0.1.10
+VERSION = 0.1.11
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 DISTFILES += \
@@ -75,6 +75,7 @@ DISTFILES += \
     assets/img/switch-on.svg \
     assets/qss/reminder.qss \
     qt.conf \
+    reminder.iss \
     reminder.iss
 
 RESOURCES += \

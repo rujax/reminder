@@ -634,6 +634,18 @@ bool MainWindow::_updateReminder(Reminder::RepeatMode repeatMode, const Reminder
         return false;
     }
 
+    if (reminders->count() == 0)
+    {
+        reminders->append(reminder);
+
+        _writeReminders();
+        _displayReminders();
+
+        if (reminder.isEnabled()) _startTimer(reminder);
+
+        return true;
+    }
+
     for (int i = 0; i < reminders->count(); ++i)
     {
         if (reminders->at(i).id() == reminder.id())
@@ -849,6 +861,7 @@ void MainWindow::_systemTrayActivated(QSystemTrayIcon::ActivationReason reason)
 void MainWindow::_newReminder()
 {
     Reminder reminder;
+    reminder.setStatus(Reminder::Enabled);
 
     ReminderDialog rd(reminder);
 

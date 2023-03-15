@@ -47,6 +47,7 @@ private:
     void _buildUI();
     void _connectSlots();
     void _toggleStatus(Reminder::Status status);
+    void _toggleDNDView();
 
 private slots:
     void _statusClicked();

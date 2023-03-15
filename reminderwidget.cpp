@@ -34,6 +34,11 @@ void ReminderWidget::setReminder(const Reminder &reminder)
     {
         _reminder.setRepeatMode(reminder.repeatMode());
         _repeatLabel->setText(_reminder.repeatText());
+
+        _reminder.setDND(reminder.dnd());
+        _reminder.setDNDDuration(reminder.dndDuration());
+
+        _toggleDNDView();
     }
 
     if (_reminder.time() != reminder.time())
@@ -51,18 +56,7 @@ void ReminderWidget::setReminder(const Reminder &reminder)
     {
         _reminder.setDNDDuration(reminder.dndDuration());
 
-        if (_reminder.repeatMode() == Reminder::Hourly)
-        {
-            _dndTitleLabel->show();
-            _dndLabel->show();
-            _dndLabel->setText(_reminder.isOpenDND() ? _reminder.dndDuration() : "未开启");
-        }
-        else
-        {
-            _dndTitleLabel->hide();
-            _dndLabel->hide();
-            _dndLabel->setText("未开启");
-        }
+        _toggleDNDView();
     }
 }
 
@@ -257,6 +251,22 @@ void ReminderWidget::_toggleStatus(Reminder::Status status)
         this->setStyleSheet("background-color: #cecece");
         _statusSwitch->setPixmap(QPixmap(":/assets/img/switch-off.svg"));
         _imageLabel->setPixmap(QPixmap(":/assets/img/disabled.svg"));
+    }
+}
+
+void ReminderWidget::_toggleDNDView()
+{
+    if (_reminder.repeatMode() == Reminder::Hourly)
+    {
+        _dndTitleLabel->show();
+        _dndLabel->show();
+        _dndLabel->setText(_reminder.isOpenDND() ? _reminder.dndDuration() : "未开启");
+    }
+    else
+    {
+        _dndTitleLabel->hide();
+        _dndLabel->hide();
+        _dndLabel->setText("未开启");
     }
 }
 
