@@ -23,7 +23,7 @@ signals:
     void statusClicked(Reminder::Status status);
     void startTimer(const Reminder &reminder);
     void stopTimer(const QString &id);
-    void saveReminder(const Reminder &reminder);
+    void updateReminder(const Reminder &reminder);
     void removeReminder(const Reminder &reminder);
 
 protected:
@@ -51,7 +51,7 @@ private:
 
 private slots:
     void _statusClicked();
-    void _saveReminder(const Reminder &reminder);
+    void _updateReminder(const Reminder &reminder);
 };
 
 #endif // REMINDERWIDGET_H

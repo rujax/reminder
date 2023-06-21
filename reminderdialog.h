@@ -25,7 +25,8 @@ public:
     explicit ReminderDialog(const Reminder &reminder, QWidget *parent = nullptr);
 
 signals:
-    void saveReminder(const Reminder &reminder);
+    void createReminder(const Reminder &reminder);
+    void updateReminder(const Reminder &reminder);
 
 private:
     // Data

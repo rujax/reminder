@@ -148,9 +148,13 @@ void ReminderDialog::_accepted()
         QString id = QUuid::createUuid().toString(QUuid::WithoutBraces);
 
         _reminder.setID(id);
-    }
 
-    emit saveReminder(_reminder);
+        emit createReminder(_reminder);
+    }
+    else
+    {
+        emit updateReminder(_reminder);
+    }
 
     close();
 }

@@ -82,7 +82,7 @@ bool ReminderWidget::eventFilter(QObject *obj, QEvent *event)
 
             ReminderDialog rd(_reminder);
 
-            auto connection = connect(&rd, &ReminderDialog::saveReminder, this, &ReminderWidget::_saveReminder);
+            auto connection = connect(&rd, &ReminderDialog::updateReminder, this, &ReminderWidget::_updateReminder);
 
             rd.exec();
 
@@ -288,10 +288,10 @@ void ReminderWidget::_statusClicked()
 
 //    qDebug() << "_statusClicked _reminder:" << _reminder;
 
-    emit saveReminder(_reminder);
+    emit updateReminder(_reminder);
 }
 
-void ReminderWidget::_saveReminder(const Reminder &reminder)
+void ReminderWidget::_updateReminder(const Reminder &reminder)
 {
-    emit saveReminder(reminder);
+    emit updateReminder(reminder);
 }

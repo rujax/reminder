@@ -97,7 +97,6 @@ private:
     void _displayReminders();
     void _sortReminders(QList<Reminder> &reminders);
     QList<Reminder> *_findReminders(Reminder::RepeatMode repeatMode);
-    bool _updateReminder(Reminder::RepeatMode repeatMode, const Reminder &reminder);
     void _updateReminders(Reminder::RepeatMode repeatMode, Reminder::Status status);
     void _handleButtonStatus(bool status);
     void _toggleAllReminders(Reminder::Status status);
@@ -106,7 +105,8 @@ private:
 private slots:
     void _systemTrayActivated(QSystemTrayIcon::ActivationReason reason);
     void _newReminder();
-    void _saveReminder(const Reminder &reminder);
+    void _createReminder(const Reminder &reminder);
+    void _updateReminder(const Reminder &reminder);
     void _removeReminder(const Reminder &reminder);
     void _enableAllReminders();
     void _disableAllReminders();

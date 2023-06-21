@@ -464,6 +464,12 @@ void MainWindow::_loadReminders()
 #endif
     }
 
+//    qDebug() << "_noRepeatReminders: " << _noRepeatReminders;
+//    qDebug() << "_hourlyReminders: " << _hourlyReminders;
+//    qDebug() << "_dailyReminders: " << _dailyReminders;
+//    qDebug() << "_weeklyReminders: " << _weeklyReminders;
+//    qDebug() << "_monthlyReminders: " << _monthlyReminders;
+
     _sortReminders(_noRepeatReminders);
     _sortReminders(_hourlyReminders);
     _sortReminders(_dailyReminders);
@@ -550,7 +556,7 @@ void MainWindow::_displayReminders()
             ReminderWidget *rw = new ReminderWidget(r, this);
             rw->setObjectName(r.id());
 
-            connect(rw, &ReminderWidget::saveReminder, this, &MainWindow::_saveReminder);
+            connect(rw, &ReminderWidget::updateReminder, this, &MainWindow::_updateReminder);
             connect(rw, &ReminderWidget::removeReminder, this, &MainWindow::_removeReminder);
             connect(rw, &ReminderWidget::startTimer, this, &MainWindow::_startTimer);
             connect(rw, &ReminderWidget::stopTimer, this, &MainWindow::_stopTimer);
@@ -607,6 +613,9 @@ void MainWindow::_sortReminders(QList<Reminder> &reminders)
 
 QList<Reminder> *MainWindow::_findReminders(Reminder::RepeatMode repeatMode)
 {
+//    qDebug() << "repeatMode: " << repeatMode;
+//    qDebug() << "_hourlyReminders: " << _hourlyReminders;
+
     QList<Reminder> *reminders = nullptr;
 
     switch (repeatMode)
@@ -620,69 +629,6 @@ QList<Reminder> *MainWindow::_findReminders(Reminder::RepeatMode repeatMode)
     }
 
     return reminders;
-}
-
-bool MainWindow::_updateReminder(Reminder::RepeatMode repeatMode, const Reminder &reminder)
-{
-//    qDebug() << "_updateReminder repeatMode:" << repeatMode << ", reminder:" << reminder;
-
-    QList<Reminder> *reminders = _findReminders(repeatMode);
-
-    if (reminders == nullptr)
-    {
-        qWarning() << "Can't find reminders by" << repeatMode;
-        return false;
-    }
-
-    if (reminders->count() == 0)
-    {
-        reminders->append(reminder);
-
-        _writeReminders();
-        _displayReminders();
-
-        if (reminder.isEnabled()) _startTimer(reminder);
-
-        return true;
-    }
-
-    for (int i = 0; i < reminders->count(); ++i)
-    {
-        if (reminders->at(i).id() == reminder.id())
-        {
-            if (reminders->at(i).repeatMode() == reminder.repeatMode())
-            {
-                reminders->replace(i, reminder);
-
-                _sortReminders(*reminders);
-            }
-            else
-            {
-                reminders->removeAt(i);
-
-                QList<Reminder> *newReminders = _findReminders(reminder.repeatMode());
-
-                if (newReminders == nullptr)
-                {
-                    qWarning() << "Can't find reminders by" << reminder.repeatMode();
-                    return false;
-                }
-
-                newReminders->append(reminder);
-
-                _sortReminders(*newReminders);
-            }
-
-            _writeReminders();
-            _displayReminders();
-
-            if (reminder.isEnabled()) _startTimer(reminder);
-
-            return true;
-        }
-    }
-
-    return false;
 }
 
 void MainWindow::_updateReminders(Reminder::RepeatMode repeatMode, Reminder::Status status)
@@ -833,7 +779,7 @@ void MainWindow::_handleTimer(int timerId)
     {
         reminder.setStatus(Reminder::Disabled);
 
-        _saveReminder(reminder);
+        _updateReminder(reminder);
         _stopTimer(reminder.id());
     }
 }
@@ -865,32 +811,16 @@ void MainWindow::_newReminder()
 
     ReminderDialog rd(reminder);
 
-    auto connection = connect(&rd, &ReminderDialog::saveReminder, this, &MainWindow::_saveReminder);
+    auto connection = connect(&rd, &ReminderDialog::createReminder, this, &MainWindow::_createReminder);
 
     rd.exec();
 
     disconnect(connection);
 }
 
-void MainWindow::_saveReminder(const Reminder &reminder)
+void MainWindow::_createReminder(const Reminder &reminder)
 {
-//    qDebug() << "MainWindow::_saveReminder reminder:" << reminder;
-
-    bool updated = _updateReminder(Reminder::NoRepeat, reminder);
-
-    if (updated) return;
-    else updated = _updateReminder(Reminder::Hourly, reminder);
-
-    if (updated) return;
-    else updated = _updateReminder(Reminder::Daily, reminder);
-
-    if (updated) return;
-    else updated = _updateReminder(Reminder::Weekly, reminder);
-
-    if (updated) return;
-    else updated = _updateReminder(Reminder::Monthly, reminder);
-
-    if (updated) return;
+//    qDebug() << "MainWindow::_createReminder reminder:" << reminder;
 
     QList<Reminder> *reminders = _findReminders(reminder.repeatMode());
 
@@ -904,6 +834,75 @@ void MainWindow::_saveReminder(const Reminder &reminder)
 
     _sortReminders(*reminders);
 
+    _writeReminders();
+    _displayReminders();
+
+    if (reminder.isEnabled()) _startTimer(reminder);
+}
+
+void MainWindow::_updateReminder(const Reminder &reminder)
+{
+//    qDebug() << "_updateReminder reminder:" << reminder;
+
+    QList<Reminder> *reminders = _findReminders(reminder.repeatMode());
+
+    if (reminders == nullptr)
+    {
+        qWarning() << "Can't find reminders by" << reminder.repeatMode();
+        return;
+    }
+
+//    qDebug() << "*reminders: " << *reminders;
+
+    bool isFound = false;
+
+    for (int i = 0; i < reminders->count(); ++i)
+    {
+        if (reminders->at(i).id() != reminder.id()) continue;
+
+        isFound = true;
+
+        reminders->replace(i, reminder);
+
+        break;
+    }
+
+    if (!isFound)
+    {
+
+        reminders->append(reminder);
+
+        QList<Reminder::RepeatMode> repeatModes = {
+            Reminder::RepeatMode::NoRepeat,
+            Reminder::RepeatMode::Hourly,
+            Reminder::RepeatMode::Daily,
+            Reminder::RepeatMode::Weekly,
+            Reminder::RepeatMode::Monthly
+        };
+        repeatModes.removeOne(reminder.repeatMode());
+
+        foreach (auto repeatMode, repeatModes)
+        {
+            if (isFound) break;
+
+            QList<Reminder> *otherReminders = _findReminders(repeatMode);
+
+            if (otherReminders == nullptr) continue;
+
+            for (int i = 0; i < otherReminders->count(); ++i)
+            {
+                if (otherReminders->at(i).id() != reminder.id()) continue;
+
+                isFound = true;
+
+                otherReminders->removeAt(i);
+
+                break;
+            }
+        }
+    }
+
+    _sortReminders(*reminders);
     _writeReminders();
     _displayReminders();
 
