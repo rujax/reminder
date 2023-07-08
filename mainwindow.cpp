@@ -27,6 +27,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     _autoRunSetting(new QSettings(AUTO_RUN_REG_PATH, QSettings::NativeFormat, this)),
+    _timerPaused(false),
     _weekMap({{ "一", "1" }, { "二", "2" }, { "三", "3" }, { "四", "4" }, { "五", "5" }, { "六", "6" }, { "日", "7" }})
 {
     setWindowTitle("Reminder");
@@ -248,12 +249,37 @@ void MainWindow::_buildSystemTrayIcon()
         rp->showMessage();
     });
 
+    _pauseAllAction = new QAction("暂停提醒");
+
+    connect(_pauseAllAction, &QAction::triggered, [this] {
+        if (_timerPaused)
+        {
+            _timerPaused = false;
+            _pauseAllAction->setText("暂停提醒");
+            _startAllTimers(true);
+
+            ReminderPopup *rp = new ReminderPopup("Reminder", "已恢复提醒", 1);
+            rp->showMessage();
+        }
+        else
+        {
+            _timerPaused = true;
+            _pauseAllAction->setText("恢复提醒");
+            _killAllTimers();
+
+            ReminderPopup *rp = new ReminderPopup("Reminder", "已暂停提醒", 1);
+            rp->showMessage();
+        }
+    });
+
     connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
 
     menu->addAction(dashboardAction);
     menu->addSeparator();
     menu->addAction(enableAllAction);
     menu->addAction(disableAllAction);
+    menu->addSeparator();
+    menu->addAction(_pauseAllAction);
     menu->addSeparator();
     menu->addAction(quitAction);
 
@@ -668,29 +694,11 @@ void MainWindow::_toggleAllReminders(Reminder::Status status)
 
     if (status == Reminder::Disabled)
     {
-        foreach (int timerId, _timerReminders.keys())
-        {
-            killTimer(timerId);
-        }
-
-        _timerReminders.clear();
-        _timersHash.clear();
+        _killAllTimers();
     }
     else
     {
-        QList<Reminder> totalReminders = _noRepeatReminders;
-        totalReminders.append(_hourlyReminders);
-        totalReminders.append(_dailyReminders);
-        totalReminders.append(_weeklyReminders);
-        totalReminders.append(_monthlyReminders);
-
-        foreach (const Reminder &reminder, totalReminders)
-        {
-            int timerId = startTimer(1000);
-
-            _timerReminders.insert(timerId, reminder);
-            _timersHash.insert(reminder.id(), timerId);
-        }
+        _startAllTimers();
     }
 }
 
@@ -997,4 +1005,34 @@ void MainWindow::_stopTimer(const QString &id)
 
     _timerReminders.remove(_timersHash.value(id));
     _timersHash.remove(id);
+}
+
+void MainWindow::_startAllTimers(bool onlyEnabled)
+{
+    QList<Reminder> totalReminders = _noRepeatReminders;
+    totalReminders.append(_hourlyReminders);
+    totalReminders.append(_dailyReminders);
+    totalReminders.append(_weeklyReminders);
+    totalReminders.append(_monthlyReminders);
+
+    foreach (const Reminder &reminder, totalReminders)
+    {
+        if (onlyEnabled && !reminder.isEnabled()) continue;
+
+        int timerId = startTimer(1000);
+
+        _timerReminders.insert(timerId, reminder);
+        _timersHash.insert(reminder.id(), timerId);
+    }
+}
+
+void MainWindow::_killAllTimers()
+{
+    foreach (int timerId, _timerReminders.keys())
+    {
+        killTimer(timerId);
+    }
+
+    _timerReminders.clear();
+    _timersHash.clear();
 }

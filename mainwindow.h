@@ -44,6 +44,7 @@ private:
     QSettings *_settings;
 
     bool _audioEnabled;
+    bool _timerPaused;
 
     QFileInfo _customAudioInfo;
 
@@ -74,6 +75,7 @@ private:
     QAction *_disableAudioAction;
     QAction *_autoRunAction;
     QAction *_aboutAction;
+    QAction *_pauseAllAction;
 
     QSystemTrayIcon *_systemTray;
 
@@ -112,5 +114,7 @@ private slots:
     void _disableAllReminders();
     void _startTimer(const Reminder &reminder);
     void _stopTimer(const QString &id);
+    void _startAllTimers(bool onlyEnabled = false);
+    void _killAllTimers();
 };
 #endif // MAINWINDOW_H
