@@ -284,8 +284,6 @@ void MainWindow::_buildSystemTrayIcon()
     menu->addAction(quitAction);
 
     _systemTray->setContextMenu(menu);
-
-    menu->move(cursor().pos());
 }
 
 void MainWindow::_connectSlots()
@@ -805,6 +803,10 @@ void MainWindow::_systemTrayActivated(QSystemTrayIcon::ActivationReason reason)
         activateWindow();
 
         break;
+    }
+    case QSystemTrayIcon::Context:
+    {
+        _systemTray->contextMenu()->move(QPoint(cursor().pos().x(), cursor().pos().y() - _systemTray->contextMenu()->height()));
     }
 
     default:
