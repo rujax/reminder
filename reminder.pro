@@ -22,8 +22,10 @@ DEFINES += QT_DEPRECATED_WARNINGS
 QMAKE_CXXFLAGS += -Wno-missing-field-initializers # 允许初始化列表不初始所有的变量
 
 DEFINES += QT_MESSAGELOGCONTEXT # qDebug 用
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x050F00
 
 SOURCES += \
+    aboutdialog.cpp \
     accombobox.cpp \
     dailytab.cpp \
     hourlytab.cpp \
@@ -39,6 +41,7 @@ SOURCES += \
     weeklytab.cpp
 
 HEADERS += \
+    aboutdialog.h \
     accombobox.h \
     dailytab.h \
     hourlytab.h \
@@ -58,25 +61,22 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-VERSION = 0.1.14
+VERSION = 0.2.0
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 DISTFILES += \
-    .gitignore \
-    CHANGES-0.0.X.md \
-    CHANGES-0.1.X.md \
-    deployfile \
     assets/audio/alarm.wav \
+    assets/font/DroidSansFallback.ttf \
+    assets/img/copyright.png \
     assets/img/disabled.svg \
     assets/img/enabled.svg \
-    assets/img/reminder.svg \
+    assets/img/github.png \
+    assets/img/reminder.ico \
+    assets/img/reminder.png \
     assets/img/remove.svg \
     assets/img/switch-off.svg \
     assets/img/switch-on.svg \
-    assets/qss/reminder.qss \
-    qt.conf \
-    reminder.iss \
-    reminder.iss
+    assets/qss/reminder.qss
 
 RESOURCES += \
     reminder.qrc

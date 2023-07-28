@@ -116,8 +116,8 @@ void DailyTab::_buildUI()
 void DailyTab::_connectSlots()
 {
     connect(_titleEdit, &QLineEdit::textChanged, this, &DailyTab::_textChanged);
-    connect(_hours, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_hourChanged(const QString &)));
-    connect(_minutes, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_minuteChanged(const QString &)));
+    connect(_hours, &ACComboBox::currentIndexChanged, this, &DailyTab::_hourChanged);
+    connect(_minutes, &ACComboBox::currentIndexChanged, this, &DailyTab::_minuteChanged);
     connect(_statusSwitch, &StatusSwitch<Reminder::Status>::clicked, this, &DailyTab::_statusClicked);
 }
 
@@ -141,22 +141,22 @@ void DailyTab::_textChanged(const QString &text)
     emit tabChanged(_reminder);
 }
 
-void DailyTab::_hourChanged(const QString &hour)
+void DailyTab::_hourChanged(int hour)
 {
 //    qDebug() << "hour:" << hour;
 
-    _times.replace(0, hour);
+    _times.replace(0, _hours->itemText(hour));
 
     _setTime();
 
     emit tabChanged(_reminder);
 }
 
-void DailyTab::_minuteChanged(const QString &minute)
+void DailyTab::_minuteChanged(int minute)
 {
 //    qDebug() << "minute:" << minute;
 
-    _times.replace(1, minute);
+    _times.replace(1, _minutes->itemText(minute));
 
     _setTime();
 

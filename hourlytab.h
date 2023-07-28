@@ -45,10 +45,10 @@ private:
 
 private slots:
     void _textChanged(const QString &text);
-    void _minuteChanged(const QString &minute);
+    void _minuteChanged(int minute);
     void _dndClicked();
-    void _dndStartChanged(const QString &dndStart);
-    void _dndEndChanged(const QString &dndEnd);
+    void _dndStartChanged(int dndStart);
+    void _dndEndChanged(int dndEnd);
     void _statusClicked();
 };
 

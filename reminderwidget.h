@@ -21,8 +21,8 @@ public:
 
 signals:
     void statusClicked(Reminder::Status status);
-    void startTimer(const Reminder &reminder);
-    void stopTimer(const QString &id);
+    void startReminder(const Reminder &reminder);
+    void stopReminder(const QString &id);
     void updateReminder(const Reminder &reminder);
     void removeReminder(const Reminder &reminder);
 

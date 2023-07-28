@@ -7,6 +7,7 @@
 #include <QDateTimeEdit>
 #include <QVBoxLayout>
 #include <QDebug>
+#include <QTimer>
 
 NoRepeatTab::NoRepeatTab(const Reminder &reminder, QWidget *parent) : QWidget(parent), _reminder(reminder)
 {
@@ -82,6 +83,10 @@ void NoRepeatTab::_buildUI()
     mainLayout->addWidget(_statusSwitch);
 
     setLayout(mainLayout);
+
+    QTimer::singleShot(500, this, [this] {
+        _titleEdit->setFocus();
+    });
 }
 
 void NoRepeatTab::_connectSlots()

@@ -54,8 +54,8 @@ void ReminderPopup::showMessage()
 
     QRect desktopRect = QGuiApplication::primaryScreen()->availableGeometry();
 
-    _endPoint.setX(desktopRect.width() - rect().width());
-    _endPoint.setY(desktopRect.height() - rect().height());
+    _endPoint.setX(desktopRect.width() - width());
+    _endPoint.setY(desktopRect.height() - height());
 
 //    qDebug() << "_endPoint:" << _endPoint;
 
@@ -95,9 +95,7 @@ void ReminderPopup::mousePressEvent(QMouseEvent *event)
 //    qDebug() << "Enter mousePressEvent";
 
     if (event->button() == Qt::LeftButton) {
-        QPointF localPos = event->localPos();
-
-        if (localPos.y() <= 40)
+        if (event->localPos().y() <= 40)
         {
             // 点击标题栏
             _mousePos = event->globalPos();
@@ -126,11 +124,7 @@ void ReminderPopup::mouseMoveEvent(QMouseEvent *event)
 {
 //    qDebug() << "Enter mouseMoveEvent";
 
-    if (!_mousePos.isNull()) {
-        QPoint delta = event->globalPos() - _mousePos;
-
-        move(_windowPos +delta);
-    }
+    if (!_mousePos.isNull()) move(_windowPos + event->globalPos() - _mousePos);
 }
 
 // Private Methods
@@ -138,7 +132,6 @@ void ReminderPopup::_buildUI()
 {
     QHBoxLayout *titleLayout = new QHBoxLayout;
     titleLayout->setGeometry(QRect(0, 0, 300, 30));
-    titleLayout->setMargin(0);
     titleLayout->setContentsMargins(0, 0, 0, 0);
 
     QLabel *titleLabel = new QLabel;
@@ -154,7 +147,7 @@ void ReminderPopup::_buildUI()
     titleCloseButton->setFlat(true);
     titleCloseButton->setFixedSize(30, 30);
 
-    connect(titleCloseButton, &QPushButton::clicked, [this] {
+    connect(titleCloseButton, &QPushButton::clicked, this, [this] {
         _closeTimer->start(50);
 
         emit closed();
@@ -164,12 +157,11 @@ void ReminderPopup::_buildUI()
 
     QLabel *messageLabel = new QLabel;
     messageLabel->setObjectName("popup-message-label");
-    messageLabel->setFixedWidth(300);
-    messageLabel->setWordWrap(true);
+    messageLabel->setFixedWidth(280);
     messageLabel->setContentsMargins(10, 5, 10, 5);
 
     QFontMetrics fontMetrics(messageLabel->font());
-    QString message = fontMetrics.elidedText(_message, Qt::ElideRight, 300);
+    QString message = fontMetrics.elidedText(_message, Qt::ElideRight, 280);
 
     messageLabel->setText(message);
     messageLabel->setToolTip(_message);
@@ -185,7 +177,6 @@ void ReminderPopup::_buildUI()
     container->setGraphicsEffect(effect);
 
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->setMargin(0);
     layout->setSpacing(0);
     layout->setContentsMargins(0, 0, 0, 0);
 

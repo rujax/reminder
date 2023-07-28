@@ -15,14 +15,17 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QTimer>
-#include <QSound>
+#include <QSoundEffect>
+#include <QUrl>
 #include <QFileDialog>
 #include <QScrollBar>
 #include <QPointer>
+#include <QProcess>
 
 #include "reminderwidget.h"
 #include "reminderdialog.h"
 #include "reminderpopup.h"
+#include "aboutdialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -31,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _weekMap({{ "一", "1" }, { "二", "2" }, { "三", "3" }, { "四", "4" }, { "五", "5" }, { "六", "6" }, { "日", "7" }})
 {
     setWindowTitle("Reminder");
-    setWindowIcon(QIcon(":/assets/img/reminder.svg"));
+    setWindowIcon(QIcon(":/assets/img/reminder.ico"));
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
     QString settingPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/reminder.ini";
@@ -53,6 +56,16 @@ MainWindow::MainWindow(QWidget *parent) :
         _customAudioInfo = QFileInfo(_settings->value(SETTING_AUDIO_CUSTOM_PATH).toString());
 
         if (!_customAudioInfo.exists()) _settings->remove(SETTING_AUDIO_CUSTOM_PATH);
+    }
+
+    if (_settings->value(SETTING_SCALE_ENABLED).isNull())
+    {
+        _scaleEnabled = true;
+        _settings->setValue(SETTING_SCALE_ENABLED, true);
+    }
+    else
+    {
+        _scaleEnabled = _settings->value(SETTING_SCALE_ENABLED).toBool();
     }
 
     _buildUI();
@@ -107,7 +120,7 @@ void MainWindow::_buildUI()
     _reminderList->setFixedWidth(600);
 
     QPalette pal(_reminderList->palette());
-    pal.setColor(QPalette::Background, QColor(0xf6, 0xf6, 0xf6));
+    pal.setColor(QPalette::Window, QColor(0xf6, 0xf6, 0xf6));
     _reminderList->setAutoFillBackground(true);
     _reminderList->setPalette(pal);
 
@@ -138,7 +151,7 @@ void MainWindow::_buildUI()
     _disableAllButton->setFixedHeight(60);
     _disableAllButton->setEnabled(false);
 
-    _newReminderButton = new QPushButton("新建提醒");
+    _newReminderButton = new QPushButton("新增提醒");
     _newReminderButton->setObjectName("new-reminder-button");
     _newReminderButton->setFixedHeight(60);
 
@@ -167,7 +180,7 @@ void MainWindow::_buildMenu()
     // Remind
     _remindMenu = menuBar()->addMenu("提醒");
 
-    _newReminderAction = new QAction("新建提醒");
+    _newReminderAction = new QAction("新增提醒");
     _remindMenu->addAction(_newReminderAction);
 
     _enableReminderAction = new QAction("启用全部提醒");
@@ -177,6 +190,13 @@ void MainWindow::_buildMenu()
     _disableRemianderAction = new QAction("禁用全部提醒");
     _disableRemianderAction->setEnabled(false);
     _remindMenu->addAction(_disableRemianderAction);
+
+    _remindMenu->addSeparator();
+
+    QAction *exitAction = new QAction("退出");
+    _remindMenu->addAction(exitAction);
+
+    connect(exitAction, &QAction::triggered, qApp, &QApplication::exit);
 
     // Setting
     _settingMenu = menuBar()->addMenu("设置");
@@ -212,6 +232,11 @@ void MainWindow::_buildMenu()
     _autoRunAction->setChecked(_autoRunSetting->contains(QApplication::applicationName()));
     _settingMenu->addAction(_autoRunAction);
 
+    _scaleAction = new QAction("启用缩放");
+    _scaleAction->setCheckable(true);
+    _scaleAction->setChecked(_scaleEnabled);
+    _settingMenu->addAction(_scaleAction);
+
     // Help
     _helpMenu = menuBar()->addMenu("帮助");
 
@@ -231,18 +256,18 @@ void MainWindow::_buildSystemTrayIcon()
     QAction *dashboardAction = new QAction("打开主面板");
     QAction *enableAllAction = new QAction("启用全部提醒");
     QAction *disableAllAction = new QAction("禁用全部提醒");
-    QAction *quitAction = new QAction("退出");
+    QAction *exitAction = new QAction("退出");
 
     connect(dashboardAction, &QAction::triggered, this, &MainWindow::show);
 
-    connect(enableAllAction, &QAction::triggered, [this] {
+    connect(enableAllAction, &QAction::triggered, this, [this] {
         _toggleAllReminders(Reminder::Enabled);
 
         ReminderPopup *rp = new ReminderPopup("Reminder", "已启用全部提醒", 1);
         rp->showMessage();
     });
 
-    connect(disableAllAction, &QAction::triggered, [this] {
+    connect(disableAllAction, &QAction::triggered, this, [this] {
         _toggleAllReminders(Reminder::Disabled);
 
         ReminderPopup *rp = new ReminderPopup("Reminder", "已禁用全部提醒", 1);
@@ -251,7 +276,7 @@ void MainWindow::_buildSystemTrayIcon()
 
     _pauseAllAction = new QAction("暂停提醒");
 
-    connect(_pauseAllAction, &QAction::triggered, [this] {
+    connect(_pauseAllAction, &QAction::triggered, this, [this] {
         if (_timerPaused)
         {
             _timerPaused = false;
@@ -272,7 +297,7 @@ void MainWindow::_buildSystemTrayIcon()
         }
     });
 
-    connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
+    connect(exitAction, &QAction::triggered, qApp, &QApplication::exit);
 
     menu->addAction(dashboardAction);
     menu->addSeparator();
@@ -281,7 +306,7 @@ void MainWindow::_buildSystemTrayIcon()
     menu->addSeparator();
     menu->addAction(_pauseAllAction);
     menu->addSeparator();
-    menu->addAction(quitAction);
+    menu->addAction(exitAction);
 
     _systemTray->setContextMenu(menu);
 }
@@ -293,7 +318,7 @@ void MainWindow::_connectSlots()
     connect(_enableReminderAction, &QAction::triggered, this, &MainWindow::_enableAllReminders);
     connect(_disableRemianderAction, &QAction::triggered, this, &MainWindow::_disableAllReminders);
 
-    connect(_selectAudioAction, &QAction::triggered, [this] {
+    connect(_selectAudioAction, &QAction::triggered, this, [this] {
         QString openPath = _customAudioInfo.absoluteFilePath();
 
         if (openPath.isEmpty()) openPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
@@ -326,7 +351,7 @@ void MainWindow::_connectSlots()
         QMessageBox::information(this, "提示", "已启用自定义音效");
     });
 
-    connect(_defaultAudioAction, &QAction::triggered, [this] {
+    connect(_defaultAudioAction, &QAction::triggered, this, [this] {
         _audioEnabled = true;
 
         _settings->setValue(SETTING_AUDIO_ENABLED, _audioEnabled);
@@ -345,7 +370,7 @@ void MainWindow::_connectSlots()
         QMessageBox::information(this, "提示", "已启用默认音效");
     });
 
-    connect(_disableAudioAction, &QAction::triggered, [this] {
+    connect(_disableAudioAction, &QAction::triggered, this, [this] {
         _audioEnabled = false;
 
         _settings->setValue(SETTING_AUDIO_ENABLED, _audioEnabled);
@@ -364,7 +389,7 @@ void MainWindow::_connectSlots()
         QMessageBox::information(this, "提示", "已禁用提醒音效");
     });
 
-    connect(_autoRunAction, &QAction::triggered, [this] {
+    connect(_autoRunAction, &QAction::triggered, this, [this] {
         QString appName = QApplication::applicationName();
 
         if (_autoRunSetting->contains(appName))
@@ -385,13 +410,31 @@ void MainWindow::_connectSlots()
         }
     });
 
-    connect(_aboutAction, &QAction::triggered, [this] {
-        QString text = "<h4>Reminder</h4>";
-        text += "<pre>Author:      Rujax Chen</pre>";
-        text += "<pre>App Version: " + QString::fromLocal8Bit(APP_VERSION) + "</pre>";
-        text += "<pre>Qt Version:  " + QString::fromLocal8Bit(QT_VERSION_STR) + "</pre>";
+    connect(_scaleAction, &QAction::triggered, this, [this] {
+        QMessageBox mb(QMessageBox::Warning, "警告", QString("%1缩放需要重新启动应用，确认重启？").arg(_scaleEnabled ? "关闭" : "开启"));
 
-        QMessageBox::about(this, "关于", text);
+        QPushButton *confirmButton = mb.addButton("确定", QMessageBox::AcceptRole);
+        mb.addButton("取消", QMessageBox::RejectRole);
+        mb.exec();
+
+        if (mb.clickedButton() == confirmButton)
+        {
+            _scaleEnabled = !_scaleEnabled;
+            _settings->setValue(SETTING_SCALE_ENABLED, _scaleEnabled);
+            _settings->sync();
+
+            QProcess::startDetached(qApp->applicationFilePath());
+            QApplication::exit();
+        }
+        else
+        {
+            _scaleAction->setChecked(_scaleEnabled);
+        }
+    });
+
+    connect(_aboutAction, &QAction::triggered, this, [] {
+        AboutDialog ad;
+        ad.exec();
     });
 
     // Buttton
@@ -582,8 +625,8 @@ void MainWindow::_displayReminders()
 
             connect(rw, &ReminderWidget::updateReminder, this, &MainWindow::_updateReminder);
             connect(rw, &ReminderWidget::removeReminder, this, &MainWindow::_removeReminder);
-            connect(rw, &ReminderWidget::startTimer, this, &MainWindow::_startTimer);
-            connect(rw, &ReminderWidget::stopTimer, this, &MainWindow::_stopTimer);
+            connect(rw, &ReminderWidget::startReminder, this, &MainWindow::_startReminder);
+            connect(rw, &ReminderWidget::stopReminder, this, &MainWindow::_stopReminder);
 
             _reminderLayout->addWidget(rw, 0, Qt::AlignTop);
         }
@@ -753,7 +796,7 @@ void MainWindow::_handleTimer(int timerId)
 
         ReminderPopup *rp = new ReminderPopup("您有一条新的提醒", reminder.title(), 0);
 
-        connect(rp, &ReminderPopup::messageClicked, [this, reminder] {
+        connect(rp, &ReminderPopup::messageClicked, this, [this, reminder] {
             _reminderPopups.remove(reminder.id());
 
             if (!isVisible())
@@ -764,7 +807,7 @@ void MainWindow::_handleTimer(int timerId)
             }
         });
 
-        connect(rp, &ReminderPopup::closed, [this, reminder] {
+        connect(rp, &ReminderPopup::closed, this, [this, reminder] {
             _reminderPopups.remove(reminder.id());
         });
 
@@ -776,8 +819,12 @@ void MainWindow::_handleTimer(int timerId)
 
         if (_audioEnabled)
         {
-            if (_customAudioInfo.exists()) QSound::play(_customAudioInfo.absoluteFilePath());
-            else QSound::play(":/assets/audio/alarm.wav");
+            QSoundEffect *se = new QSoundEffect(this);
+
+            if (_customAudioInfo.exists()) se->setSource(QUrl::fromLocalFile(_customAudioInfo.absoluteFilePath()));
+            else se->setSource(QUrl::fromLocalFile(":/assets/audio/alarm.wav"));
+
+            se->play();
         }
     }
 
@@ -786,7 +833,7 @@ void MainWindow::_handleTimer(int timerId)
         reminder.setStatus(Reminder::Disabled);
 
         _updateReminder(reminder);
-        _stopTimer(reminder.id());
+        _stopReminder(reminder.id());
     }
 }
 
@@ -847,7 +894,7 @@ void MainWindow::_createReminder(const Reminder &reminder)
     _writeReminders();
     _displayReminders();
 
-    if (reminder.isEnabled()) _startTimer(reminder);
+    if (reminder.isEnabled()) _startReminder(reminder);
 }
 
 void MainWindow::_updateReminder(const Reminder &reminder)
@@ -916,7 +963,7 @@ void MainWindow::_updateReminder(const Reminder &reminder)
     _writeReminders();
     _displayReminders();
 
-    if (reminder.isEnabled()) _startTimer(reminder);
+    if (reminder.isEnabled()) _startReminder(reminder);
 }
 
 void MainWindow::_removeReminder(const Reminder &reminder)
@@ -931,7 +978,7 @@ void MainWindow::_removeReminder(const Reminder &reminder)
         return;
     }
 
-    _stopTimer(reminder.id());
+    _stopReminder(reminder.id());
 
     for (int i = 0; i < reminders->count(); ++i)
     {
@@ -993,7 +1040,7 @@ void MainWindow::_disableAllReminders()
     if (mb.clickedButton() == confirmButton) _toggleAllReminders(Reminder::Disabled);
 }
 
-void MainWindow::_startTimer(const Reminder &reminder)
+void MainWindow::_startReminder(const Reminder &reminder)
 {
     int timerId = startTimer(1000);
 
@@ -1001,7 +1048,7 @@ void MainWindow::_startTimer(const Reminder &reminder)
     _timersHash.insert(reminder.id(), timerId);
 }
 
-void MainWindow::_stopTimer(const QString &id)
+void MainWindow::_stopReminder(const QString &id)
 {
     killTimer(_timersHash.value(id));
 

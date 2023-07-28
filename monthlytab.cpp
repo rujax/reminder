@@ -141,9 +141,9 @@ void MonthlyTab::_buildUI()
 void MonthlyTab::_connectSlots()
 {
     connect(_titleEdit, &QLineEdit::textChanged, this, &MonthlyTab::_textChanged);
-    connect(_days, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_dayChanged(const QString &)));
-    connect(_hours, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_hourChanged(const QString &)));
-    connect(_minutes, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_minuteChanged(const QString &)));
+    connect(_days, &ACComboBox::currentIndexChanged, this, &MonthlyTab::_dayChanged);
+    connect(_hours, &ACComboBox::currentIndexChanged, this, &MonthlyTab::_hourChanged);
+    connect(_minutes, &ACComboBox::currentIndexChanged, this, &MonthlyTab::_minuteChanged);
     connect(_statusSwitch, &StatusSwitch<Reminder::Status>::clicked, this, &MonthlyTab::_statusClicked);
 }
 
@@ -168,33 +168,33 @@ void MonthlyTab::_textChanged(const QString &text)
     emit tabChanged(_reminder);
 }
 
-void MonthlyTab::_dayChanged(const QString& day)
+void MonthlyTab::_dayChanged(int day)
 {
 //    qDebug() << "day:" << day;
 
-    _times.replace(0, day);
+    _times.replace(0, _days->itemText(day));
 
     _setTime();
 
     emit tabChanged(_reminder);
 }
 
-void MonthlyTab::_hourChanged(const QString& hour)
+void MonthlyTab::_hourChanged(int hour)
 {
 //    qDebug() << "hour:" << hour;
 
-    _times.replace(1, hour);
+    _times.replace(1, _hours->itemText(hour));
 
     _setTime();
 
     emit tabChanged(_reminder);
 }
 
-void MonthlyTab::_minuteChanged(const QString& minute)
+void MonthlyTab::_minuteChanged(int minute)
 {
 //    qDebug() << "minute:" << minute;
 
-    _times.replace(2, minute);
+    _times.replace(2, _minutes->itemText(minute));
 
     _setTime();
 

@@ -121,7 +121,7 @@ void ReminderWidget::_buildUI()
     this->setMinimumHeight(80);
     this->setProperty("class", "reminder");
 
-    if (_reminder.isDisabled()) this->setStyleSheet("background-color: #cecece");
+    if (_reminder.isDisabled()) this->setStyleSheet("background-color: #ccc");
 
     // 主布局
     QHBoxLayout *hbLayout = new QHBoxLayout(this);
@@ -277,18 +277,14 @@ void ReminderWidget::_statusClicked()
     {
         _toggleStatus(Reminder::Disabled);
 
-        emit stopTimer(_reminder.id());
+        emit stopReminder(_reminder.id());
     }
     else
     {
         _toggleStatus(Reminder::Enabled);
-
-        emit startTimer(_reminder);
     }
 
-//    qDebug() << "_statusClicked _reminder:" << _reminder;
-
-    emit updateReminder(_reminder);
+    emit updateReminder(_reminder); // updateReminder 包含了 startReminder
 }
 
 void ReminderWidget::_updateReminder(const Reminder &reminder)

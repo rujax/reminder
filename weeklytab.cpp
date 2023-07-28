@@ -137,9 +137,9 @@ void WeeklyTab::_buildUI()
 void WeeklyTab::_connectSlots()
 {
     connect(_titleEdit, &QLineEdit::textChanged, this, &WeeklyTab::_textChanged);
-    connect(_days, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_dayChanged(const QString &)));
-    connect(_hours, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_hourChanged(const QString &)));
-    connect(_minutes, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_minuteChanged(const QString &)));
+    connect(_days, &ACComboBox::currentIndexChanged, this, &WeeklyTab::_dayChanged);
+    connect(_hours, &ACComboBox::currentIndexChanged, this, &WeeklyTab::_hourChanged);
+    connect(_minutes, &ACComboBox::currentIndexChanged, this, &WeeklyTab::_minuteChanged);
     connect(_statusSwitch, &StatusSwitch<Reminder::Status>::clicked, this, &WeeklyTab::_statusClicked);
 }
 
@@ -164,33 +164,33 @@ void WeeklyTab::_textChanged(const QString &text)
     emit tabChanged(_reminder);
 }
 
-void WeeklyTab::_dayChanged(const QString &day)
+void WeeklyTab::_dayChanged(int day)
 {
 //    qDebug() << "day:" << day;
 
-    _times.replace(0, day);
+    _times.replace(0, _days->itemText(day));
 
     _setTime();
 
     emit tabChanged(_reminder);
 }
 
-void WeeklyTab::_hourChanged(const QString &hour)
+void WeeklyTab::_hourChanged(int hour)
 {
 //    qDebug() << "hour:" << hour;
 
-    _times.replace(1, hour);
+    _times.replace(1, _hours->itemText(hour));
 
     _setTime();
 
     emit tabChanged(_reminder);
 }
 
-void WeeklyTab::_minuteChanged(const QString &minute)
+void WeeklyTab::_minuteChanged(int minute)
 {
 //    qDebug() << "minute:" << minute;
 
-    _times.replace(2, minute);
+    _times.replace(2, _minutes->itemText(minute));
 
     _setTime();
 
