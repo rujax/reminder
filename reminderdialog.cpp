@@ -5,7 +5,7 @@
 #include <QVBoxLayout>
 #include <QMessageBox>
 #include <QUuid>
-#include <QRegExp>
+#include <QRegularExpression>
 
 ReminderDialog::ReminderDialog(const Reminder &reminder, QWidget *parent) : QDialog(parent), _reminder(reminder)
 {
@@ -71,7 +71,7 @@ bool ReminderDialog::_validateReminder()
         return false;
     }
 
-    QRegExp timeRegExp;
+    QRegularExpression timeRegExp;
 
     switch (_reminder.repeatMode())
     {
@@ -83,7 +83,7 @@ bool ReminderDialog::_validateReminder()
     default: break;
     }
 
-    if (!timeRegExp.exactMatch(_reminder.time()))
+    if (!timeRegExp.match(_reminder.time()).hasMatch())
     {
         QMessageBox::warning(this, "警告", "时间与选定重复模式不匹配");
 
@@ -92,11 +92,11 @@ bool ReminderDialog::_validateReminder()
 
     if (_reminder.repeatMode() == Reminder::Hourly && _reminder.isOpenDND())
     {
-        QRegExp dndRegExp("\\d{2}点 ~ \\d{2}点");
+        static QRegularExpression dndRegExp("\\d{2}点 ~ \\d{2}点");
 
 //        qDebug() << "_reminder.dndDuration():" << _reminder.dndDuration();
 
-        if (!dndRegExp.exactMatch(_reminder.dndDuration()))
+        if (!dndRegExp.match(_reminder.dndDuration()).hasMatch())
         {
             QMessageBox::warning(this, "警告", "每小时重复模式下的免打扰时段设置错误");
 

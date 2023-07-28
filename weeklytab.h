@@ -44,9 +44,9 @@ private:
 
 private slots:
     void _textChanged(const QString &text);
-    void _dayChanged(const QString &day);
-    void _hourChanged(const QString &hour);
-    void _minuteChanged(const QString &minute);
+    void _dayChanged(int day);
+    void _hourChanged(int hour);
+    void _minuteChanged(int minute);
     void _statusClicked();
 };
 

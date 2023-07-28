@@ -39,11 +39,13 @@ private:
     const QString DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
     const QString SETTING_AUDIO_ENABLED = "audioEnabled";
     const QString SETTING_AUDIO_CUSTOM_PATH = "audioCustomPath";
+    const QString SETTING_SCALE_ENABLED = "scaleEnabled";
 
     QSettings *_autoRunSetting;
     QSettings *_settings;
 
     bool _audioEnabled;
+    bool _scaleEnabled;
     bool _timerPaused;
 
     QFileInfo _customAudioInfo;
@@ -74,6 +76,7 @@ private:
     QAction *_defaultAudioAction;
     QAction *_disableAudioAction;
     QAction *_autoRunAction;
+    QAction *_scaleAction;
     QAction *_aboutAction;
     QAction *_pauseAllAction;
 
@@ -112,8 +115,8 @@ private slots:
     void _removeReminder(const Reminder &reminder);
     void _enableAllReminders();
     void _disableAllReminders();
-    void _startTimer(const Reminder &reminder);
-    void _stopTimer(const QString &id);
+    void _startReminder(const Reminder &reminder);
+    void _stopReminder(const QString &id);
     void _startAllTimers(bool onlyEnabled = false);
     void _killAllTimers();
 };

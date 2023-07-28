@@ -1,5 +1,5 @@
 ReminderWidget.reminder {
-    border-bottom: 1px solid lightgray;
+    border-bottom: 1px solid #999;
 }
 
 QLabel {
@@ -14,7 +14,7 @@ QLabel.title-label {
 }
 
 QLabel.repeat-label, QLabel.time-label, QLabel.dnd-label {
-    color: #33ccff;
+    color: #009966;
 }
 
 QTabBar::tab {
@@ -32,7 +32,7 @@ QPushButton#disable-all-button, QPushButton#new-reminder-button, QPushButton#ena
     height: 60px;
     border: none;
     font-size: 16px;
-    font-weight: bold;
+    font-weight: 500;
 }
 
 QPushButton#disable-all-button {
@@ -81,15 +81,15 @@ QScrollBar:vertical {
 QScrollBar::handle:vertical {
     width: 10px;
     min-height: 20px;
-    background: rgb(0, 0, 0, 50);
+    background: rgba(0, 0, 0, 50);
 }
 
 QScrollBar::handle:vertical:hover {
-    background: rgb(0, 0, 0, 70);
+    background: rgba(0, 0, 0, 70);
 }
 
 QScrollBar::handle:vertical:pressed {
-    background: rgb(0, 0, 0, 90);
+    background: rgba(0, 0, 0, 90);
 }
 
 QScrollBar::sub-line:vertical, QScrollBar::add-line:vertical {
@@ -129,10 +129,52 @@ QPushButton.close-button:hover {
 }
 
 QPushButton.close-button:pressed {
-    background: rgb(255, 0, 0, 90);
+    background: rgba(255, 0, 0, 90);
 }
 
 QWidget#popup {
     border: 1px solid #333;
     border-radius: 10px;
+}
+
+QLabel#about-name-label {
+    padding: 0;
+    font-size: 40px;
+    font-weight: bold;
+    color: #eee;
+}
+
+QLabel#about-version-label {
+    font-size: 16px;
+    color: #ddd;
+}
+
+QPushButton.about-close-button {
+    font-size: 20px;
+    font-style: normal;
+    font-weight: lighter;
+    color: #ccc;
+    border: none;
+    background: transparent;
+    text-align: center;
+    line-height: 30px;
+}
+
+QPushButton.about-close-button:hover {
+    background-color: red;
+    color: white;
+}
+
+QPushButton.about-close-button:pressed {
+    background: rgba(255, 0, 0, 90);
+}
+
+QLabel#about-copyright-label {
+    font-size: 16px;
+    color: #ccc;
+}
+
+QLabel#about-qt-label {
+    font-size: 20px;
+    color: #aaa;
 }

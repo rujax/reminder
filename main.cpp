@@ -1,16 +1,34 @@
 #include "mainwindow.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QStyleFactory>
 #include <QDebug>
 #include <QFile>
 #include <QStandardPaths>
 #include <QDir>
 #include <QLockFile>
+#include <QSettings>
+#include <QFontDatabase>
 
 int main(int argc, char *argv[])
 {
+    QString settingPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/reminder/reminder.ini";
+    QSettings settings(settingPath, QSettings::IniFormat);
+
+    if (settings.value("scaleEnabled").isNull())
+    {
+        settings.setValue("scaleEnabled", true);
+    }
+    else
+    {
+        if (!settings.value("scaleEnabled").toBool())
+        {
+            qputenv("QT_AUTO_SCREEN_SCALE_FACTOR", "1");
+            QApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Floor);
+        }
+    }
+
     QApplication a(argc, argv);
 
     QString path = QDir::temp().absoluteFilePath("Reminder-Singleton.lock");
@@ -23,8 +41,14 @@ int main(int argc, char *argv[])
 
     if (!dir.exists()) dir.mkpath(dir.path());
 
-    QFont font("微软雅黑");
-    a.setFont(font);
+    int fontID = QFontDatabase::addApplicationFont(":/assets/font/DroidSansFallback.ttf");
+    QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontID);
+
+    if (fontFamilies.size() > 0)
+    {
+        QFont font(fontFamilies[0]);
+        a.setFont(font);
+    }
 
     QFile qss(":/assets/qss/reminder.qss");
 
@@ -43,7 +67,7 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.resize(600, 800);
     w.setFixedSize(600, 800);
-    w.move((QApplication::desktop()->width() - w.width()) / 2, (QApplication::desktop()->height() - w.height()) / 2);
+    w.move((QGuiApplication::primaryScreen()->geometry().width() - w.width()) / 2, (QGuiApplication::primaryScreen()->geometry().height() - w.height()) / 2);
 
     if (argc > 1 && argv[1] == MainWindow::tr("/autoRun")) w.hide();
     else w.show();

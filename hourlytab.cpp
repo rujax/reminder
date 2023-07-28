@@ -143,10 +143,10 @@ void HourlyTab::_buildUI()
 void HourlyTab::_connectSlots()
 {
     connect(_titleEdit, &QLineEdit::textChanged, this, &HourlyTab::_textChanged);
-    connect(_minutes, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_minuteChanged(const QString &)));
+    connect(_minutes, &ACComboBox::currentIndexChanged, this, &HourlyTab::_minuteChanged);
     connect(_dndSwitch, &StatusSwitch<Reminder::DND>::clicked, this, &HourlyTab::_dndClicked);
-    connect(_dndStart, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_dndStartChanged(const QString &)));
-    connect(_dndEnd, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(_dndEndChanged(const QString &)));
+    connect(_dndStart, &ACComboBox::currentIndexChanged, this, &HourlyTab::_dndStartChanged);
+    connect(_dndEnd, &ACComboBox::currentIndexChanged, this, &HourlyTab::_dndEndChanged);
     connect(_statusSwitch, &StatusSwitch<Reminder::Status>::clicked, this, &HourlyTab::_statusClicked);
 }
 
@@ -158,9 +158,9 @@ void HourlyTab::_textChanged(const QString &text)
     emit tabChanged(_reminder);
 }
 
-void HourlyTab::_minuteChanged(const QString& minute)
+void HourlyTab::_minuteChanged(int minute)
 {
-    _reminder.setTime(minute + "分");
+    _reminder.setTime(_minutes->itemText(minute) + "分");
 
 //    qDebug() << "_reminder.time():" << _reminder.time();
 
@@ -189,22 +189,22 @@ void HourlyTab::_dndClicked()
     emit tabChanged(_reminder);
 }
 
-void HourlyTab::_dndStartChanged(const QString &dndStart)
+void HourlyTab::_dndStartChanged(int dndStart)
 {
 //    qDebug() << "dndStart:" << dndStart;
 
-    _dndDuration.replace(0, dndStart);
+    _dndDuration.replace(0, _dndStart->itemText(dndStart));
 
     _reminder.setDNDDuration(_dndDuration.join(" ~ "));
 
     emit tabChanged(_reminder);
 }
 
-void HourlyTab::_dndEndChanged(const QString &dndEnd)
+void HourlyTab::_dndEndChanged(int dndEnd)
 {
 //    qDebug() << "dndEnd:" << dndEnd;
 
-    _dndDuration.replace(1, dndEnd);
+    _dndDuration.replace(1, _dndEnd->itemText(dndEnd));
 
     _reminder.setDNDDuration(_dndDuration.join(" ~ "));
 
