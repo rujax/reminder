@@ -136,6 +136,7 @@ void MainWindow::_buildUI()
     _reminderContainer->setWidgetResizable(true);
     _reminderContainer->setGeometry(0, 0, 600, 716);
     _reminderContainer->setFrameShape(QFrame::NoFrame);
+    _reminderContainer->setWidget(_reminderList);
 
     QScrollBar *scrollBar = _reminderContainer->verticalScrollBar();
     scrollBar->setFixedWidth(10);
@@ -173,6 +174,12 @@ void MainWindow::_buildUI()
     mainLayout->addLayout(actionsLayout);
 
     container->setLayout(mainLayout);
+
+    _resumeButton = new QPushButton("恢复提醒", this);
+    _resumeButton->setObjectName("resume-button");
+    _resumeButton->setFixedSize(600, 30);
+    _resumeButton->move(0, 21);
+    _resumeButton->hide();
 }
 
 void MainWindow::_buildMenu()
@@ -248,7 +255,6 @@ void MainWindow::_buildSystemTrayIcon()
 {
     _systemTray = new QSystemTrayIcon(this);
     _systemTray->setIcon(QIcon(":/assets/img/reminder.svg"));
-    _systemTray->setToolTip("Reminder");
     _systemTray->show();
 
     QMenu *menu = new QMenu();
@@ -279,18 +285,14 @@ void MainWindow::_buildSystemTrayIcon()
     connect(_pauseAllAction, &QAction::triggered, this, [this] {
         if (_timerPaused)
         {
-            _timerPaused = false;
-            _pauseAllAction->setText("暂停提醒");
-            _startAllTimers(true);
+            _resumeReminders();
 
             ReminderPopup *rp = new ReminderPopup("Reminder", "已恢复提醒", 1);
             rp->showMessage();
         }
         else
         {
-            _timerPaused = true;
-            _pauseAllAction->setText("恢复提醒");
-            _killAllTimers();
+            _pauseReminders();
 
             ReminderPopup *rp = new ReminderPopup("Reminder", "已暂停提醒", 1);
             rp->showMessage();
@@ -309,6 +311,7 @@ void MainWindow::_buildSystemTrayIcon()
     menu->addAction(exitAction);
 
     _systemTray->setContextMenu(menu);
+    _systemTray->setToolTip("Reminder");
 }
 
 void MainWindow::_connectSlots()
@@ -438,6 +441,7 @@ void MainWindow::_connectSlots()
     });
 
     // Buttton
+    connect(_resumeButton, &QPushButton::clicked, this, &MainWindow::_resumeReminders);
     connect(_disableAllButton, &QPushButton::clicked, this, &MainWindow::_disableAllReminders);
     connect(_newReminderButton, &QPushButton::clicked, this, &MainWindow::_newReminder);
     connect(_enableAllButton, &QPushButton::clicked, this, &MainWindow::_enableAllReminders);
@@ -521,7 +525,7 @@ void MainWindow::_loadReminders()
         }
 
 #if 1
-        if (reminder.isEnabled())
+        if (reminder.isEnabled() && !_timerPaused)
         {
             int timerId = startTimer(1000);
 
@@ -657,8 +661,6 @@ void MainWindow::_displayReminders()
     }
 
     if (totalReminders.count() > 0) _handleButtonStatus(true);
-
-    if (_reminderContainer->widget() == nullptr) _reminderContainer->setWidget(_reminderList);
 }
 
 void MainWindow::_sortReminders(QList<Reminder> &reminders)
@@ -894,7 +896,7 @@ void MainWindow::_createReminder(const Reminder &reminder)
     _writeReminders();
     _displayReminders();
 
-    if (reminder.isEnabled()) _startReminder(reminder);
+    if (reminder.isEnabled() && !_timerPaused) _startReminder(reminder);
 }
 
 void MainWindow::_updateReminder(const Reminder &reminder)
@@ -963,7 +965,7 @@ void MainWindow::_updateReminder(const Reminder &reminder)
     _writeReminders();
     _displayReminders();
 
-    if (reminder.isEnabled()) _startReminder(reminder);
+    if (reminder.isEnabled() && !_timerPaused) _startReminder(reminder);
 }
 
 void MainWindow::_removeReminder(const Reminder &reminder)
@@ -1038,6 +1040,28 @@ void MainWindow::_disableAllReminders()
     mb.exec();
 
     if (mb.clickedButton() == confirmButton) _toggleAllReminders(Reminder::Disabled);
+}
+
+void MainWindow::_pauseReminders()
+{
+    _timerPaused = true;
+    _pauseAllAction->setText("恢复提醒");
+    _killAllTimers();
+    _resumeButton->show();
+
+    setWindowTitle("Reminder - 暂停提醒");
+    _systemTray->setToolTip("Reminder - 暂停提醒");
+}
+
+void MainWindow::_resumeReminders()
+{
+    _timerPaused = false;
+    _pauseAllAction->setText("暂停提醒");
+    _startAllTimers(true);
+    _resumeButton->hide();
+
+    setWindowTitle("Reminder");
+    _systemTray->setToolTip("Reminder");
 }
 
 void MainWindow::_startReminder(const Reminder &reminder)

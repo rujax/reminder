@@ -88,6 +88,7 @@ private:
 
     QVBoxLayout *_reminderLayout;
 
+    QPushButton *_resumeButton;
     QPushButton *_enableAllButton;
     QPushButton *_newReminderButton;
     QPushButton *_disableAllButton;
@@ -115,6 +116,8 @@ private slots:
     void _removeReminder(const Reminder &reminder);
     void _enableAllReminders();
     void _disableAllReminders();
+    void _pauseReminders();
+    void _resumeReminders();
     void _startReminder(const Reminder &reminder);
     void _stopReminder(const QString &id);
     void _startAllTimers(bool onlyEnabled = false);

@@ -27,7 +27,8 @@ void AboutDialog::paintEvent(QPaintEvent *event)
 
 void AboutDialog::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton)
+    {
         if (event->localPos().y() <= 40)
         {
             _mousePos = event->globalPos();
@@ -52,7 +53,8 @@ bool AboutDialog::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == _repoLabel)
     {
-        switch (event->type()) {
+        switch (event->type())
+        {
         case QEvent::HoverEnter:
             _repoLabel->setText(_repoLabel->text().replace("#ccc", "#eee"));
             setCursor(Qt::PointingHandCursor);
