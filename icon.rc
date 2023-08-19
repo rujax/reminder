@@ -1,0 +1,3 @@
+#include "project.h"
+
+IDI_ICON1 ICON PRODUCT_ICON

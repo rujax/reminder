@@ -6,6 +6,8 @@
 #include <QPushButton>
 #include <QLabel>
 
+#include "project.h"
+
 AboutDialog::AboutDialog(QWidget *parent) : QDialog(parent)
 {
     setWindowFlags(Qt::FramelessWindowHint | Qt::SubWindow);
@@ -29,10 +31,10 @@ void AboutDialog::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        if (event->localPos().y() <= 40)
+        if (event->position().y() <= 40)
         {
-            _mousePos = event->globalPos();
-            _windowPos = pos();
+            _mousePosition = event->globalPosition();
+            _windowPosition = pos();
         }
     }
 }
@@ -41,12 +43,16 @@ void AboutDialog::mouseReleaseEvent(QMouseEvent *event)
 {
     Q_UNUSED(event);
 
-    _mousePos = QPoint();
+    _mousePosition = QPointF();
 }
 
 void AboutDialog::mouseMoveEvent(QMouseEvent *event)
 {
-    if (!_mousePos.isNull()) move(_windowPos + event->globalPos() - _mousePos);
+    if (!_mousePosition.isNull())
+    {
+        QPointF newPosition = _windowPosition + event->globalPosition() - _mousePosition;
+        move(newPosition.x(), newPosition.y());
+    }
 }
 
 bool AboutDialog::eventFilter(QObject *obj, QEvent *event)
@@ -96,7 +102,7 @@ void AboutDialog::_buildUI()
 
     QLabel *imageLabel = new QLabel;
     imageLabel->setGeometry(QRect(0, 0, 40, 40));
-    imageLabel->setPixmap(QPixmap(":/assets/img/reminder.png"));
+    imageLabel->setPixmap(QPixmap(":/assets/images/reminder.png"));
 
     headLayout->addWidget(imageLabel);
     headLayout->addSpacing(10);
@@ -111,7 +117,7 @@ void AboutDialog::_buildUI()
     QLabel *versionLabel = new QLabel;
     versionLabel->setContentsMargins(0, 0, 0, 8);
     versionLabel->setObjectName("about-version-label");
-    versionLabel->setText(QString::fromLocal8Bit(APP_VERSION));
+    versionLabel->setText(PROJECT_VERSION);
     headLayout->addWidget(versionLabel, 0, Qt::AlignBottom);
 
     QLabel *qtLabel = new QLabel;
@@ -120,14 +126,14 @@ void AboutDialog::_buildUI()
     qtLabel->setText("Based on Qt " + QString::fromLocal8Bit(QT_VERSION_STR));
 
     QLabel *cLabel = new QLabel;
-    cLabel->setPixmap(QPixmap(":/assets/img/copyright.png"));
+    cLabel->setPixmap(QPixmap(":/assets/images/copyright.png"));
 
     QLabel *copyrightLabel = new QLabel;
     copyrightLabel->setObjectName("about-copyright-label");
     copyrightLabel->setText("2019-2023 Rujax Chen");
 
     QLabel *iconLabel = new QLabel;
-    iconLabel->setPixmap(QPixmap(":/assets/img/github.png"));
+    iconLabel->setPixmap(QPixmap(":/assets/images/github.png"));
 
     _repoLabel = new QLabel;
     _repoLabel->setObjectName("about-repo-label");

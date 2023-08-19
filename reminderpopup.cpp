@@ -95,11 +95,11 @@ void ReminderPopup::mousePressEvent(QMouseEvent *event)
 //    qDebug() << "Enter mousePressEvent";
 
     if (event->button() == Qt::LeftButton) {
-        if (event->localPos().y() <= 40)
+        if (event->position().y() <= 40)
         {
             // 点击标题栏
-            _mousePos = event->globalPos();
-            _windowPos = pos();
+            _mousePosition = event->globalPosition();
+            _windowPosition = pos();
         }
         else
         {
@@ -117,14 +117,18 @@ void ReminderPopup::mouseReleaseEvent(QMouseEvent *event)
 
     Q_UNUSED(event);
 
-    _mousePos = QPoint();
+    _mousePosition = QPointF();
 }
 
 void ReminderPopup::mouseMoveEvent(QMouseEvent *event)
 {
 //    qDebug() << "Enter mouseMoveEvent";
 
-    if (!_mousePos.isNull()) move(_windowPos + event->globalPos() - _mousePos);
+    if (!_mousePosition.isNull())
+    {
+        QPointF newPosition = _windowPosition + event->globalPosition() - _mousePosition;
+        move(newPosition.x(), newPosition.y());
+    }
 }
 
 // Private Methods

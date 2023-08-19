@@ -1,0 +1,8 @@
+#ifndef PROJECT_H
+#define PROJECT_H
+
+#define PROJECT_VERSION "@PROJECT_VERSION@"
+
+#define PRODUCT_ICON "assets/icons/reminder.ico"
+
+#endif // PROJECT_H

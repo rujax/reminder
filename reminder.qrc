@@ -1,18 +1,21 @@
 <RCC>
     <qresource prefix="/">
-        <file>assets/qss/reminder.qss</file>
-        <file>assets/img/enabled.svg</file>
-        <file>assets/img/disabled.svg</file>
-        <file>assets/img/switch-off.svg</file>
-        <file>assets/img/switch-on.svg</file>
-        <file>assets/img/remove.svg</file>
-        <file>assets/audio/alarm.wav</file>
-        <file>assets/img/reminder.png</file>
-        <file>assets/font/DroidSansFallback.ttf</file>
-        <file>assets/img/github.png</file>
-        <file>assets/img/copyright.png</file>
-        <file>assets/img/reminder.ico</file>
-        <file>assets/img/reminder.svg</file>
+        <file>assets/icons/reminder.ico</file>
+        <file>assets/markdowns/CHANGES-0.0.X.md</file>
+        <file>assets/markdowns/CHANGES-0.1.X.md</file>
+        <file>assets/markdowns/CHANGES-0.2.X.md</file>
+        <file>assets/fonts/DroidSansFallback.ttf</file>
+        <file>assets/images/copyright.png</file>
+        <file>assets/images/disabled.svg</file>
+        <file>assets/images/enabled.svg</file>
+        <file>assets/images/github.png</file>
+        <file>assets/images/reminder.png</file>
+        <file>assets/images/reminder.svg</file>
+        <file>assets/images/remove.svg</file>
+        <file>assets/images/switch-off.svg</file>
+        <file>assets/images/switch-on.svg</file>
+        <file>assets/audios/alarm.wav</file>
+        <file>assets/stylesheets/reminder.qss</file>
     </qresource>
     <qresource prefix="/qt/etc"/>
 </RCC>

@@ -35,8 +35,8 @@ private:
     int _currentY;
     QPoint _endPoint;
     double _opacity;
-    QPoint _mousePos;
-    QPoint _windowPos;
+    QPointF _mousePosition;
+    QPointF _windowPosition;
 
     QTimer *_moveTimer;
     QTimer *_closeTimer;

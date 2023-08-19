@@ -41,16 +41,17 @@ int main(int argc, char *argv[])
 
     if (!dir.exists()) dir.mkpath(dir.path());
 
-    int fontID = QFontDatabase::addApplicationFont(":/assets/font/DroidSansFallback.ttf");
+    int fontID = QFontDatabase::addApplicationFont(":/assets/fonts/DroidSansFallback.ttf");
     QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontID);
 
     if (fontFamilies.size() > 0)
     {
         QFont font(fontFamilies[0]);
+        font.setWeight(QFont::Thin);
         a.setFont(font);
     }
 
-    QFile qss(":/assets/qss/reminder.qss");
+    QFile qss(":/assets/stylesheets/reminder.qss");
 
     if (qss.open(QFile::ReadOnly))
     {

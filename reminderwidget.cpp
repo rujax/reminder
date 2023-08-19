@@ -139,7 +139,7 @@ void ReminderWidget::_buildUI()
     _imageLabel->setProperty("class", "image-label");
     _imageLabel->setGeometry(QRect(0, 0, 48, 48));
     _imageLabel->setFixedWidth(48);
-    _imageLabel->setPixmap(QPixmap(":/assets/img/" + status + ".svg"));
+    _imageLabel->setPixmap(QPixmap(":/assets/images/" + status + ".svg"));
 
     leftLayout->addWidget(_imageLabel);
 
@@ -172,7 +172,7 @@ void ReminderWidget::_buildUI()
     _removeLabel = new QLabel;
     _removeLabel->setGeometry(QRect(0, 0, 20, 20));
     _removeLabel->setFixedWidth(20);
-    _removeLabel->setPixmap(QPixmap(":/assets/img/remove.svg"));
+    _removeLabel->setPixmap(QPixmap(":/assets/images/remove.svg"));
     _removeLabel->installEventFilter(this);
 
     rightTopLayout->addWidget(_removeLabel, 0, Qt::AlignTop);
@@ -243,14 +243,14 @@ void ReminderWidget::_toggleStatus(Reminder::Status status)
     if (_reminder.isEnabled())
     {
         this->setStyleSheet("background-color: #f6f6f6");
-        _statusSwitch->setPixmap(QPixmap(":/assets/img/switch-on.svg"));
-        _imageLabel->setPixmap(QPixmap(":/assets/img/enabled.svg"));
+        _statusSwitch->setPixmap(QPixmap(":/assets/images/switch-on.svg"));
+        _imageLabel->setPixmap(QPixmap(":/assets/images/enabled.svg"));
     }
     else
     {
         this->setStyleSheet("background-color: #cecece");
-        _statusSwitch->setPixmap(QPixmap(":/assets/img/switch-off.svg"));
-        _imageLabel->setPixmap(QPixmap(":/assets/img/disabled.svg"));
+        _statusSwitch->setPixmap(QPixmap(":/assets/images/switch-off.svg"));
+        _imageLabel->setPixmap(QPixmap(":/assets/images/disabled.svg"));
     }
 }
 

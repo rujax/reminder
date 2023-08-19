@@ -191,3 +191,34 @@ QLabel#about-qt-label {
     font-size: 20px;
     color: #aaa;
 }
+
+QTabWidget#changes-tabwidget QTabBar::tab {
+    width: 160px;
+    height: 40px;
+    border: none;
+    border-bottom: 1px solid #aaa;
+    background-color: #ccc;
+}
+
+QTabWidget#changes-tabwidget QTabBar::tab:middle {
+    border-left: 1px solid #aaa;
+    border-right: 1px solid #aaa;
+}
+
+QTabWidget#changes-tabwidget QTabBar::tab:hover, QTabWidget#changes-tabwidget QTabBar::tab:selected {
+    background-color: #eee;
+}
+
+QTabWidget#changes-tabwidget QTabBar::tab:selected {
+    border-top: 1px solid #aaa;
+    border-bottom: none;
+}
+
+QTabWidget#changes-tabwidget::pane {
+    border: none;
+}
+
+QTextBrowser {
+    border: none;
+    background-color: #eee;
+}

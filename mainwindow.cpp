@@ -26,6 +26,7 @@
 #include "reminderdialog.h"
 #include "reminderpopup.h"
 #include "aboutdialog.h"
+#include "changesdialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -34,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _weekMap({{ "一", "1" }, { "二", "2" }, { "三", "3" }, { "四", "4" }, { "五", "5" }, { "六", "6" }, { "日", "7" }})
 {
     setWindowTitle("Reminder");
-    setWindowIcon(QIcon(":/assets/img/reminder.ico"));
+    setWindowIcon(QIcon(":/assets/icons/reminder.ico"));
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
     QString settingPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/reminder.ini";
@@ -247,6 +248,14 @@ void MainWindow::_buildMenu()
     // Help
     _helpMenu = menuBar()->addMenu("帮助");
 
+    QAction *changesAction = new QAction("更新历史");
+    _helpMenu->addAction(changesAction);
+
+    connect(changesAction, &QAction::triggered, this, [] {
+        ChangesDialog cd;
+        cd.exec();
+    });
+
     _aboutAction = new QAction("关于");
     _helpMenu->addAction(_aboutAction);
 }
@@ -254,7 +263,7 @@ void MainWindow::_buildMenu()
 void MainWindow::_buildSystemTrayIcon()
 {
     _systemTray = new QSystemTrayIcon(this);
-    _systemTray->setIcon(QIcon(":/assets/img/reminder.svg"));
+    _systemTray->setIcon(QIcon(":/assets/images/reminder.svg"));
     _systemTray->show();
 
     QMenu *menu = new QMenu();
@@ -331,7 +340,7 @@ void MainWindow::_connectSlots()
                                                         openPath,
                                                         "Audios(*.wav)",
                                                         nullptr,
-                                                        QFileDialog::ReadOnly|QFileDialog::DontResolveSymlinks);
+                                                        QFileDialog::ReadOnly | QFileDialog::DontResolveSymlinks);
 
         if (filePath.isEmpty()) return;
 
@@ -458,7 +467,7 @@ void MainWindow::_loadReminders()
 
     QFile file(remindersPath);
 
-    if (!file.open(QIODevice::ReadOnly|QIODevice::Text))
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
         file.close();
 
@@ -824,7 +833,7 @@ void MainWindow::_handleTimer(int timerId)
             QSoundEffect *se = new QSoundEffect(this);
 
             if (_customAudioInfo.exists()) se->setSource(QUrl::fromLocalFile(_customAudioInfo.absoluteFilePath()));
-            else se->setSource(QUrl::fromLocalFile(":/assets/audio/alarm.wav"));
+            else se->setSource(QUrl::fromLocalFile(":/assets/audios/alarm.wav"));
 
             se->play();
         }

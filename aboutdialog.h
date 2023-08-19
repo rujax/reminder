@@ -23,8 +23,8 @@ protected:
 
 private:
     // Data
-    QPoint _mousePos;
-    QPoint _windowPos;
+    QPointF _mousePosition;
+    QPointF _windowPosition;
 
     // UI
     QLabel *_repoLabel;

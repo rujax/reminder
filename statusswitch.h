@@ -36,7 +36,7 @@ void StatusSwitch<T>::setStatus(const T &status)
 {
     _status = status;
 
-    setPixmap(QPixmap(":/assets/img/switch-" + QString(_status == _enabledStatus ? "on" : "off") + ".svg"));
+    setPixmap(QPixmap(":/assets/images/switch-" + QString(_status == _enabledStatus ? "on" : "off") + ".svg"));
 }
 
 // Protected Methods
@@ -54,7 +54,7 @@ void StatusSwitch<T>::_buildUI()
 {
     setGeometry(QRect(0, 0, 33, 20));
     setFixedWidth(33);
-    setPixmap(QPixmap(":/assets/img/switch-" + QString(_status == _enabledStatus ? "on" : "off") + ".svg"));
+    setPixmap(QPixmap(":/assets/images/switch-" + QString(_status == _enabledStatus ? "on" : "off") + ".svg"));
 }
 
 #endif // STATUSSWITCH_H
