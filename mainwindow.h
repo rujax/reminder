@@ -41,6 +41,8 @@ private:
     const QString SETTING_AUDIO_CUSTOM_PATH = "audioCustomPath";
     const QString SETTING_SCALE_ENABLED = "scaleEnabled";
 
+    QString _defaultRemindersPath;
+
     QSettings *_autoRunSetting;
     QSettings *_settings;
 
@@ -70,7 +72,9 @@ private:
 
     QAction *_newReminderAction;
     QAction *_enableReminderAction;
-    QAction *_disableRemianderAction;
+    QAction *_disableReminderAction;
+    QAction *_importAction;
+    QAction *_exportAction;
     QAction *_selectAudioAction;
     QAction *_customAudioAction;
     QAction *_defaultAudioAction;
@@ -94,12 +98,14 @@ private:
     QPushButton *_disableAllButton;
 
     // Methods
+    void _loadSettings();
+    void _loadDefaults();
     void _buildUI();
     void _buildMenu();
     void _buildSystemTrayIcon();
     void _connectSlots();
-    void _loadReminders();
-    void _writeReminders();
+    void _loadReminders(const QString &remindersPath);
+    void _writeReminders(const QString &remindersPath);
     void _displayReminders();
     void _sortReminders(QList<Reminder> &reminders);
     QList<Reminder> *_findReminders(Reminder::RepeatMode repeatMode);
@@ -116,6 +122,8 @@ private slots:
     void _removeReminder(const Reminder &reminder);
     void _enableAllReminders();
     void _disableAllReminders();
+    void _importReminders();
+    void _exportReminders();
     void _pauseReminders();
     void _resumeReminders();
     void _startReminder(const Reminder &reminder);

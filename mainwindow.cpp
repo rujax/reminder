@@ -38,42 +38,13 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowIcon(QIcon(":/assets/icons/reminder.ico"));
     setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);
 
-    QString settingPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/reminder.ini";
-
-    _settings = new QSettings(settingPath, QSettings::IniFormat, this);
-
-    if (_settings->value(SETTING_AUDIO_ENABLED).isNull())
-    {
-        _audioEnabled = true;
-        _settings->setValue(SETTING_AUDIO_ENABLED, true);
-    }
-    else
-    {
-        _audioEnabled = _settings->value(SETTING_AUDIO_ENABLED).toBool();
-    }
-
-    if (!_settings->value(SETTING_AUDIO_CUSTOM_PATH).isNull())
-    {
-        _customAudioInfo = QFileInfo(_settings->value(SETTING_AUDIO_CUSTOM_PATH).toString());
-
-        if (!_customAudioInfo.exists()) _settings->remove(SETTING_AUDIO_CUSTOM_PATH);
-    }
-
-    if (_settings->value(SETTING_SCALE_ENABLED).isNull())
-    {
-        _scaleEnabled = true;
-        _settings->setValue(SETTING_SCALE_ENABLED, true);
-    }
-    else
-    {
-        _scaleEnabled = _settings->value(SETTING_SCALE_ENABLED).toBool();
-    }
-
+    _loadSettings();
+    _loadDefaults();
     _buildUI();
     _buildMenu();
     _buildSystemTrayIcon();
     _connectSlots();
-    _loadReminders();
+    _loadReminders(_defaultRemindersPath);
     _displayReminders();
 }
 
@@ -110,6 +81,45 @@ void MainWindow::timerEvent(QTimerEvent *event)
 }
 
 // Private Methods
+void MainWindow::_loadSettings()
+{
+    QString settingPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/reminder.ini";
+
+    _settings = new QSettings(settingPath, QSettings::IniFormat, this);
+
+    if (_settings->value(SETTING_AUDIO_ENABLED).isNull())
+    {
+        _audioEnabled = true;
+        _settings->setValue(SETTING_AUDIO_ENABLED, true);
+    }
+    else
+    {
+        _audioEnabled = _settings->value(SETTING_AUDIO_ENABLED).toBool();
+    }
+
+    if (!_settings->value(SETTING_AUDIO_CUSTOM_PATH).isNull())
+    {
+        _customAudioInfo = QFileInfo(_settings->value(SETTING_AUDIO_CUSTOM_PATH).toString());
+
+        if (!_customAudioInfo.exists()) _settings->remove(SETTING_AUDIO_CUSTOM_PATH);
+    }
+
+    if (_settings->value(SETTING_SCALE_ENABLED).isNull())
+    {
+        _scaleEnabled = true;
+        _settings->setValue(SETTING_SCALE_ENABLED, true);
+    }
+    else
+    {
+        _scaleEnabled = _settings->value(SETTING_SCALE_ENABLED).toBool();
+    }
+}
+
+void MainWindow::_loadDefaults()
+{
+    _defaultRemindersPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/reminders.json";
+}
+
 void MainWindow::_buildUI()
 {
     QWidget *container = new QWidget(this);
@@ -195,9 +205,18 @@ void MainWindow::_buildMenu()
     _enableReminderAction->setEnabled(false);
     _remindMenu->addAction(_enableReminderAction);
 
-    _disableRemianderAction = new QAction("禁用全部提醒");
-    _disableRemianderAction->setEnabled(false);
-    _remindMenu->addAction(_disableRemianderAction);
+    _disableReminderAction = new QAction("禁用全部提醒");
+    _disableReminderAction->setEnabled(false);
+    _remindMenu->addAction(_disableReminderAction);
+
+    _remindMenu->addSeparator();
+
+    _importAction = new QAction("导入提醒");
+    _remindMenu->addAction(_importAction);
+
+    _exportAction = new QAction("导出提醒");
+    _exportAction->setEnabled(false);
+    _remindMenu->addAction(_exportAction);
 
     _remindMenu->addSeparator();
 
@@ -328,7 +347,9 @@ void MainWindow::_connectSlots()
     // Menu
     connect(_newReminderAction, &QAction::triggered, this, &MainWindow::_newReminder);
     connect(_enableReminderAction, &QAction::triggered, this, &MainWindow::_enableAllReminders);
-    connect(_disableRemianderAction, &QAction::triggered, this, &MainWindow::_disableAllReminders);
+    connect(_disableReminderAction, &QAction::triggered, this, &MainWindow::_disableAllReminders);
+    connect(_importAction, &QAction::triggered, this, &MainWindow::_importReminders);
+    connect(_exportAction, &QAction::triggered, this, &MainWindow::_exportReminders);
 
     connect(_selectAudioAction, &QAction::triggered, this, [this] {
         QString openPath = _customAudioInfo.absoluteFilePath();
@@ -356,8 +377,8 @@ void MainWindow::_connectSlots()
         _disableAudioAction->setChecked(false);
 
         _audioEnabled = true;
-        _settings->setValue(SETTING_AUDIO_ENABLED, _audioEnabled);
 
+        _settings->setValue(SETTING_AUDIO_ENABLED, _audioEnabled);
         _settings->setValue(SETTING_AUDIO_CUSTOM_PATH, _customAudioInfo.absoluteFilePath());
 
         QMessageBox::information(this, "提示", "已启用自定义音效");
@@ -459,10 +480,8 @@ void MainWindow::_connectSlots()
     connect(_systemTray, &QSystemTrayIcon::activated, this, &MainWindow::_systemTrayActivated);
 }
 
-void MainWindow::_loadReminders()
+void MainWindow::_loadReminders(const QString &remindersPath)
 {
-    QString remindersPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/reminders.json";
-
     if (!QFile::exists(remindersPath)) return;
 
     QFile file(remindersPath);
@@ -481,7 +500,6 @@ void MainWindow::_loadReminders()
     file.close();
 
     QJsonParseError jsonError;
-
     QJsonDocument jsonDoc = QJsonDocument::fromJson(remindersData, &jsonError);
 
     if (jsonError.error != QJsonParseError::NoError)
@@ -492,12 +510,78 @@ void MainWindow::_loadReminders()
     }
 
     QJsonObject root = jsonDoc.object();
-
     QString now = QDateTime::currentDateTime().toString(DATE_TIME_FORMAT);
+
+    if (!root["reminders"].isArray())
+    {
+        QMessageBox::warning(this, "警告", "解析数据失败，请移除文件 " + remindersPath);
+
+        return;
+    }
+
+    bool checkResult = true;
 
     foreach (const QJsonValue &value, root["reminders"].toArray())
     {
         auto obj = value.toObject();
+
+        if (!obj["id"].isString() || obj["id"].toString().isEmpty())
+        {
+            checkResult = false;
+            break;
+        }
+
+        if (!obj["title"].isString() || obj["title"].toString().isEmpty())
+        {
+            checkResult = false;
+            break;
+        }
+
+        if (!obj["time"].isString() || obj["time"].toString().isEmpty())
+        {
+            checkResult = false;
+            break;
+        }
+
+        if (!obj["repeatMode"].isDouble())
+        {
+            checkResult = false;
+            break;
+        }
+
+        if (!obj["status"].isDouble())
+        {
+            checkResult = false;
+            break;
+        }
+    }
+
+    if (!checkResult)
+    {
+        QMessageBox::warning(this, "警告", "解析数据失败，请移除文件 " + remindersPath);
+
+        return;
+    }
+
+    QStringList ids;
+
+    foreach (const Reminder &reminder, _noRepeatReminders) ids.append(reminder.id());
+    foreach (const Reminder &reminder, _hourlyReminders) ids.append(reminder.id());
+    foreach (const Reminder &reminder, _dailyReminders) ids.append(reminder.id());
+    foreach (const Reminder &reminder, _weeklyReminders) ids.append(reminder.id());
+    foreach (const Reminder &reminder, _monthlyReminders) ids.append(reminder.id());
+
+    int existing = 0;
+
+    foreach (const QJsonValue &value, root["reminders"].toArray())
+    {
+        auto obj = value.toObject();
+
+        if (ids.contains(obj["id"].toString()))
+        {
+            existing++;
+            continue;
+        }
 
         Reminder::RepeatMode repeatMode = static_cast<Reminder::RepeatMode>(obj["repeatMode"].toInt());
         QString dndDuration = obj["dndDuration"].toString();
@@ -556,14 +640,25 @@ void MainWindow::_loadReminders()
     _sortReminders(_weeklyReminders);
     _sortReminders(_monthlyReminders);
 
-    _handleButtonStatus(true);
+    if (!_noRepeatReminders.isEmpty() ||
+        !_hourlyReminders.isEmpty() ||
+        !_dailyReminders.isEmpty() ||
+        !_weeklyReminders.isEmpty() ||
+        !_monthlyReminders.isEmpty())
+    {
+        _handleButtonStatus(true);
+    }
+
+    if (existing > 0)
+    {
+        QMessageBox::information(this, "警告", QString("%1 条提醒 ID 已存在，跳过").arg(existing));
+    }
 }
 
-void MainWindow::_writeReminders()
+void MainWindow::_writeReminders(const QString &remindersPath)
 {
 //    qDebug() << "Enter MainWindow::_writeReminders";
-
-    QString remindersPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/reminders.json";
+//    qDebug() << "remindersPath: " << remindersPath;
 
     QFile file(remindersPath);
 
@@ -728,7 +823,8 @@ void MainWindow::_updateReminders(Reminder::RepeatMode repeatMode, Reminder::Sta
 void MainWindow::_handleButtonStatus(bool status)
 {
     _enableReminderAction->setEnabled(status);
-    _disableRemianderAction->setEnabled(status);
+    _disableReminderAction->setEnabled(status);
+    _exportAction->setEnabled(status);
     _enableAllButton->setEnabled(status);
     _disableAllButton->setEnabled(status);
 }
@@ -741,7 +837,7 @@ void MainWindow::_toggleAllReminders(Reminder::Status status)
     _updateReminders(Reminder::Weekly, status);
     _updateReminders(Reminder::Monthly, status);
 
-    _writeReminders();
+    _writeReminders(_defaultRemindersPath);
     _displayReminders();
 
     if (status == Reminder::Disabled)
@@ -901,11 +997,11 @@ void MainWindow::_createReminder(const Reminder &reminder)
     reminders->append(reminder);
 
     _sortReminders(*reminders);
-
-    _writeReminders();
+    _writeReminders(_defaultRemindersPath);
     _displayReminders();
 
     if (reminder.isEnabled() && !_timerPaused) _startReminder(reminder);
+    if (!_exportAction->isEnabled()) _exportAction->setEnabled(true);
 }
 
 void MainWindow::_updateReminder(const Reminder &reminder)
@@ -971,7 +1067,7 @@ void MainWindow::_updateReminder(const Reminder &reminder)
     }
 
     _sortReminders(*reminders);
-    _writeReminders();
+    _writeReminders(_defaultRemindersPath);
     _displayReminders();
 
     if (reminder.isEnabled() && !_timerPaused) _startReminder(reminder);
@@ -1001,7 +1097,7 @@ void MainWindow::_removeReminder(const Reminder &reminder)
         }
     }
 
-    _writeReminders();
+    _writeReminders(_defaultRemindersPath);
 
     for (int i = 0; i < _reminderLayout->count(); ++i)
     {
@@ -1020,8 +1116,11 @@ void MainWindow::_removeReminder(const Reminder &reminder)
         }
     }
 
-    if (_noRepeatReminders.isEmpty() && _hourlyReminders.isEmpty() && _dailyReminders.isEmpty() &&
-            _weeklyReminders.isEmpty() && _monthlyReminders.isEmpty())
+    if (_noRepeatReminders.isEmpty() &&
+        _hourlyReminders.isEmpty() &&
+        _dailyReminders.isEmpty() &&
+        _weeklyReminders.isEmpty() &&
+        _monthlyReminders.isEmpty())
     {
         _handleButtonStatus(false);
     }
@@ -1049,6 +1148,43 @@ void MainWindow::_disableAllReminders()
     mb.exec();
 
     if (mb.clickedButton() == confirmButton) _toggleAllReminders(Reminder::Disabled);
+}
+
+void MainWindow::_importReminders()
+{
+    QString filePath = QFileDialog::getOpenFileName(this,
+                                                    "选择导入文件",
+                                                    QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                                                    "JSON(*.json)",
+                                                    nullptr,
+                                                    QFileDialog::ReadOnly | QFileDialog::DontResolveSymlinks);
+
+    if (filePath.isEmpty()) return;
+
+//    qDebug() << "filePath:" << filePath;
+
+    _loadReminders(filePath);
+    _displayReminders();
+
+    QMessageBox::information(this, "提示", "导入提醒成功");
+
+    _writeReminders(_defaultRemindersPath);
+}
+
+void MainWindow::_exportReminders()
+{
+    QString filePath = QFileDialog::getSaveFileName(this,
+                                                    "导出提醒",
+                                                    QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/reminders.json",
+                                                    "JSON(*.json)");
+
+    if (filePath.isEmpty()) return;
+
+//    qDebug() << "filePath:" << filePath;
+
+    _writeReminders(filePath);
+
+    QMessageBox::information(this, "提示", "导出提醒成功");
 }
 
 void MainWindow::_pauseReminders()

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 cmake_policy(SET CMP0115 OLD)
 
-project(Reminder VERSION 0.2.2 LANGUAGES CXX)
+project(Reminder VERSION 0.2.3 LANGUAGES CXX)
 
 configure_file(
     project.h.in
