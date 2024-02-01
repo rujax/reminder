@@ -65,7 +65,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         hide();
         event->ignore();
 
-        ReminderPopup *rp = new ReminderPopup("Reminder", "后台运行", 1);
+        ReminderPopup *rp = new ReminderPopup("Reminder", "后台运行", "", 1);
         rp->showMessage();
     }
 #else
@@ -127,7 +127,7 @@ void MainWindow::_buildUI()
     setCentralWidget(container);
     layout()->setSpacing(0);
 
-    _reminderList = new QWidget(container);
+    _reminderList = new QWidget();
     _reminderList->setFixedWidth(600);
 
     QPalette pal(_reminderList->palette());
@@ -136,7 +136,7 @@ void MainWindow::_buildUI()
     _reminderList->setPalette(pal);
 
     _reminderLayout = new QVBoxLayout(_reminderList);
-    _reminderLayout->setObjectName("_reminderLayout");
+    _reminderLayout->setObjectName("reminder-layout");
     _reminderLayout->setSpacing(0);
     _reminderLayout->setContentsMargins(0, 0, 0, 0);
     _reminderLayout->setAlignment(Qt::AlignTop);
@@ -176,12 +176,11 @@ void MainWindow::_buildUI()
     actionsLayout->addWidget(_newReminderButton);
     actionsLayout->addWidget(_enableAllButton);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(container);
+    QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setSpacing(0);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    mainLayout->addWidget(_reminderList);
-    mainLayout->addStretch();
+    mainLayout->addWidget(_reminderContainer);
     mainLayout->addLayout(actionsLayout);
 
     container->setLayout(mainLayout);
@@ -297,14 +296,14 @@ void MainWindow::_buildSystemTrayIcon()
     connect(enableAllAction, &QAction::triggered, this, [this] {
         _toggleAllReminders(Reminder::Enabled);
 
-        ReminderPopup *rp = new ReminderPopup("Reminder", "已启用全部提醒", 1);
+        ReminderPopup *rp = new ReminderPopup("Reminder", "已启用全部提醒", "", 1);
         rp->showMessage();
     });
 
     connect(disableAllAction, &QAction::triggered, this, [this] {
         _toggleAllReminders(Reminder::Disabled);
 
-        ReminderPopup *rp = new ReminderPopup("Reminder", "已禁用全部提醒", 1);
+        ReminderPopup *rp = new ReminderPopup("Reminder", "已禁用全部提醒", "", 1);
         rp->showMessage();
     });
 
@@ -315,14 +314,14 @@ void MainWindow::_buildSystemTrayIcon()
         {
             _resumeReminders();
 
-            ReminderPopup *rp = new ReminderPopup("Reminder", "已恢复提醒", 1);
+            ReminderPopup *rp = new ReminderPopup("Reminder", "已恢复提醒", "", 1);
             rp->showMessage();
         }
         else
         {
             _pauseReminders();
 
-            ReminderPopup *rp = new ReminderPopup("Reminder", "已暂停提醒", 1);
+            ReminderPopup *rp = new ReminderPopup("Reminder", "已暂停提醒", "", 1);
             rp->showMessage();
         }
     });
@@ -728,7 +727,7 @@ void MainWindow::_displayReminders()
                        reminder.dnd(),
                        reminder.dndDuration());
 
-            ReminderWidget *rw = new ReminderWidget(r, this);
+            ReminderWidget *rw = new ReminderWidget(r);
             rw->setObjectName(r.id());
 
             connect(rw, &ReminderWidget::updateReminder, this, &MainWindow::_updateReminder);
@@ -901,7 +900,7 @@ void MainWindow::_handleTimer(int timerId)
     {
         if (!_reminderPopups.value(reminder.id()).isNull()) _reminderPopups.value(reminder.id())->hideMessage();
 
-        ReminderPopup *rp = new ReminderPopup("您有一条新的提醒", reminder.title(), 0);
+        ReminderPopup *rp = new ReminderPopup("您有一条新的提醒", reminder.title(), reminder.repeatClassName());
 
         connect(rp, &ReminderPopup::messageClicked, this, [this, reminder] {
             _reminderPopups.remove(reminder.id());

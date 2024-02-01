@@ -59,6 +59,7 @@ public:
     RepeatMode repeatMode() const;
     void setRepeatMode(RepeatMode repeatMode);
     QString repeatText() const;
+    QString repeatClassName() const;
     Status status() const;
     void setStatus(Status status);
     QString statusText() const;
@@ -164,6 +165,19 @@ inline
 QString Reminder::repeatText() const
 {
     return _repeatText;
+}
+
+inline
+QString Reminder::repeatClassName() const
+{
+    switch (_repeatMode) {
+    case NoRepeat: return "no-repeat";
+    case Hourly: return "hourly";
+    case Daily: return "daily";
+    case Weekly: return "weekly";
+    case Monthly: return "monthly";
+    default: return "";
+    }
 }
 
 inline

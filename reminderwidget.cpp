@@ -58,9 +58,26 @@ void ReminderWidget::setReminder(const Reminder &reminder)
 
         _toggleDNDView();
     }
+
+    _repeatLabel->setProperty("class", reminder.repeatClassName());
+    style()->polish(_repeatLabel);
+
+    _timeLabel->setProperty("class", reminder.repeatClassName());
+    style()->polish(_timeLabel);
+
+    _dndLabel->setProperty("class", reminder.repeatClassName());
+    style()->polish(_dndLabel);
 }
 
 // Protected Methods
+bool ReminderWidget::event(QEvent *event)
+{
+    if (event->type() == QEvent::Enter) this->setStyleSheet("background-color: #ffffcc");
+    else if (event->type() == QEvent::Leave) _setBackgroundColor();
+
+    return QWidget::event(event);
+}
+
 bool ReminderWidget::eventFilter(QObject *obj, QEvent *event)
 {
     if (event->type() == QEvent::MouseButtonPress)
@@ -117,11 +134,10 @@ void ReminderWidget::_buildUI()
     QString status = _reminder.isEnabled() ? "enabled" : "disabled";
 
     this->setAttribute(Qt::WA_StyledBackground);
-
     this->setMinimumHeight(80);
     this->setProperty("class", "reminder");
 
-    if (_reminder.isDisabled()) this->setStyleSheet("background-color: #ccc");
+    _setBackgroundColor();
 
     // 主布局
     QHBoxLayout *hbLayout = new QHBoxLayout(this);
@@ -185,7 +201,7 @@ void ReminderWidget::_buildUI()
     rightBottomLayout->addWidget(new QLabel("重复: "));
 
     _repeatLabel = new QLabel(_reminder.repeatText());
-    _repeatLabel->setProperty("class", "repeat-label");
+    _repeatLabel->setProperty("class", _reminder.repeatClassName());
     _repeatLabel->setMinimumWidth(70);
 
     rightBottomLayout->addWidget(_repeatLabel);
@@ -194,7 +210,7 @@ void ReminderWidget::_buildUI()
     rightBottomLayout->addWidget(new QLabel("时间: "));
 
     _timeLabel = new QLabel(_reminder.time());
-    _timeLabel->setProperty("class", "time-label");
+    _timeLabel->setProperty("class", _reminder.repeatClassName());
     _timeLabel->setMinimumWidth(60);
 
     rightBottomLayout->addWidget(_timeLabel);
@@ -206,7 +222,7 @@ void ReminderWidget::_buildUI()
     rightBottomLayout->addWidget(_dndTitleLabel);
 
     _dndLabel = new QLabel(_reminder.isOpenDND() ? _reminder.dndDuration() : "未开启");
-    _dndLabel->setProperty("class", "dnd-label");
+    _dndLabel->setProperty("class", _reminder.repeatClassName());
     if (_reminder.repeatMode() != Reminder::Hourly) _dndLabel->hide();
 
     rightBottomLayout->addWidget(_dndLabel);
@@ -240,15 +256,15 @@ void ReminderWidget::_toggleStatus(Reminder::Status status)
     _reminder.setStatus(status);
     _statusSwitch->setStatus(status);
 
+    _setBackgroundColor();
+
     if (_reminder.isEnabled())
     {
-        this->setStyleSheet("background-color: #f6f6f6");
         _statusSwitch->setPixmap(QPixmap(":/assets/images/switch-on.svg"));
         _imageLabel->setPixmap(QPixmap(":/assets/images/enabled.svg"));
     }
     else
     {
-        this->setStyleSheet("background-color: #cecece");
         _statusSwitch->setPixmap(QPixmap(":/assets/images/switch-off.svg"));
         _imageLabel->setPixmap(QPixmap(":/assets/images/disabled.svg"));
     }
@@ -268,6 +284,12 @@ void ReminderWidget::_toggleDNDView()
         _dndLabel->hide();
         _dndLabel->setText("未开启");
     }
+}
+
+void ReminderWidget::_setBackgroundColor()
+{
+    if (_reminder.isDisabled()) this->setStyleSheet("background-color: #ccc");
+    else this->setStyleSheet("background-color: #f6f6f6");
 }
 
 // Private Slots

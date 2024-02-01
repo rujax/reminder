@@ -10,10 +10,11 @@
 #include <QPushButton>
 #include <QGraphicsDropShadowEffect>
 
-ReminderPopup::ReminderPopup(const QString &title, const QString &message, int duration, QWidget *parent) :
+ReminderPopup::ReminderPopup(const QString &title, const QString &message, const QString &className, int duration, QWidget *parent) :
     QDialog(parent),
     _title(title),
     _message(message),
+    _className(className),
     _duration(duration),
     _opacity(1.0),
     _moveTimer(new QTimer(this)),
@@ -161,6 +162,7 @@ void ReminderPopup::_buildUI()
 
     QLabel *messageLabel = new QLabel;
     messageLabel->setObjectName("popup-message-label");
+    messageLabel->setProperty("class", _className);
     messageLabel->setFixedWidth(280);
     messageLabel->setContentsMargins(10, 5, 10, 5);
 

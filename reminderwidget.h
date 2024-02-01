@@ -27,6 +27,7 @@ signals:
     void removeReminder(const Reminder &reminder);
 
 protected:
+    bool event(QEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private:
@@ -48,6 +49,7 @@ private:
     void _connectSlots();
     void _toggleStatus(Reminder::Status status);
     void _toggleDNDView();
+    void _setBackgroundColor();
 
 private slots:
     void _statusClicked();

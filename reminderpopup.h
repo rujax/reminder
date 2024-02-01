@@ -12,7 +12,7 @@ class ReminderPopup : public QDialog
     Q_OBJECT
 
 public:
-    explicit ReminderPopup(const QString &title, const QString &message, int duration = 0, QWidget *parent = nullptr);
+    explicit ReminderPopup(const QString &title, const QString &message, const QString &className = "", int duration = 0, QWidget *parent = nullptr);
     ~ReminderPopup();
     void showMessage();
     void hideMessage();
@@ -31,6 +31,7 @@ private:
     // Data
     QString _title;
     QString _message;
+    QString _className;
     int _duration;
     int _currentY;
     QPoint _endPoint;

@@ -13,8 +13,24 @@ QLabel.title-label {
     font-weight: bold;
 }
 
-QLabel.repeat-label, QLabel.time-label, QLabel.dnd-label {
+QLabel.no-repeat {
+    color: #330000;
+}
+
+QLabel.hourly {
     color: #009966;
+}
+
+QLabel.daily {
+    color: #3399ff;
+}
+
+QLabel.weekly {
+    color: #6633ff;
+}
+
+QLabel.monthly {
+    color: #cc0033;
 }
 
 QTabBar::tab {

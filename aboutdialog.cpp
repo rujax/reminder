@@ -130,7 +130,7 @@ void AboutDialog::_buildUI()
 
     QLabel *copyrightLabel = new QLabel;
     copyrightLabel->setObjectName("about-copyright-label");
-    copyrightLabel->setText("2019-2023 Rujax Chen");
+    copyrightLabel->setText("2019-2024 Rujax Chen");
 
     QLabel *iconLabel = new QLabel;
     iconLabel->setPixmap(QPixmap(":/assets/images/github.png"));
